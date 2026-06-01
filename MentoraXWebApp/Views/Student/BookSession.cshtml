@@ -1,0 +1,165 @@
+@{
+    ViewData["Title"] = "Book Session";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    // Constraints: today → today+30 days
+    var minDate = DateTime.Now.ToString("yyyy-MM-ddTHH:mm");
+    var maxDate = DateTime.Now.AddDays(30).ToString("yyyy-MM-ddT23:59");
+
+    // If a slot was pre-selected (from tutor's availability), prefill it
+    // Otherwise default to tomorrow 09:00 so the field isn't empty
+    var prefillDate = !string.IsNullOrEmpty(ViewBag.SlotDate as string)
+        ? ViewBag.SlotDate
+        : DateTime.Now.AddDays(1).ToString("yyyy-MM-dd") + "T09:00";
+
+    decimal rate = ViewBag.HourlyRate != null ? (decimal)ViewBag.HourlyRate : 0;
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm" style="border-radius:16px">
+                <div class="card-header border-0 text-white rounded-top-3"
+                     style="background:linear-gradient(135deg,#0078d4,#2b88d8)">
+                    <h5 class="mb-0"><i class="fas fa-calendar-plus me-2"></i>Book Session with @ViewBag.TutorName</h5>
+                </div>
+                <div class="card-body p-4">
+
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger rounded-3">@TempData["Error"]</div>
+                    }
+                    @if (ViewBag.Error != null)
+                    {
+                        <div class="alert alert-danger rounded-3">@ViewBag.Error</div>
+                    }
+
+                    <form method="post" asp-action="BookSession" id="bookingForm">
+                        <input type="hidden" name="TutorID" value="@ViewBag.TutorId" />
+                        <input type="hidden" name="SlotID"  value="@ViewBag.SlotId"  />
+
+                        <!-- Date & Time — student picks freely within allowed range -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-calendar me-1 text-primary"></i>Session Date &amp; Time
+                            </label>
+                            <input type="datetime-local"
+                                   name="BookingDate"
+                                   id="bookingDate"
+                                   class="form-control"
+                                   value="@prefillDate"
+                                   min="@minDate"
+                                   max="@maxDate"
+                                   required />
+                            <div class="form-text text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Choose any date &amp; time within the next 30 days.
+                            </div>
+                            <div class="invalid-feedback" id="dateError"></div>
+                        </div>
+
+                        <!-- Duration -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-clock me-1 text-primary"></i>Duration (hours)
+                            </label>
+                            <select name="DurationHours" id="durationSelect" class="form-select" onchange="updatePrice()">
+                                <option value="1">1 hour — $@rate.ToString("F2")</option>
+                                <option value="2">2 hours — $@((rate * 2).ToString("F2"))</option>
+                                <option value="3">3 hours — $@((rate * 3).ToString("F2"))</option>
+                                <option value="4">4 hours — $@((rate * 4).ToString("F2"))</option>
+                            </select>
+                        </div>
+
+                        <!-- Total Price display -->
+                        <div class="alert alert-info py-2 px-3 rounded-3 mb-3" id="priceDisplay">
+                            <i class="fas fa-tag me-1"></i>
+                            Total: <strong id="totalPrice">$@rate.ToString("F2")</strong>
+                            <span class="text-muted small ms-2">(tutor earns 70%)</span>
+                        </div>
+
+                        <!-- Topic -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-book me-1 text-primary"></i>Topic <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" name="Topic" class="form-control"
+                                   placeholder="e.g. Calculus, Python basics…"
+                                   maxlength="500" required />
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-sticky-note me-1 text-primary"></i>Notes
+                                <span class="text-muted small">(optional)</span>
+                            </label>
+                            <textarea name="Notes" class="form-control" rows="3"
+                                      maxlength="1000"
+                                      placeholder="Any specific requests or questions for the tutor…"></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100 rounded-pill py-2 fw-semibold">
+                            <i class="fas fa-check me-2"></i>Confirm Booking
+                        </button>
+                        <a href="/Student/TutorDetails/@ViewBag.TutorId"
+                           class="btn btn-outline-secondary w-100 rounded-pill mt-2">
+                            Cancel
+                        </a>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var hourlyRate = @rate;
+
+    function updatePrice() {
+        var hours = parseInt(document.getElementById('durationSelect').value) || 1;
+        var total = (hourlyRate * hours).toFixed(2);
+        document.getElementById('totalPrice').textContent = '$' + total;
+    }
+
+    // Validate date on form submit — extra client-side guard
+    document.getElementById('bookingForm').addEventListener('submit', function (e) {
+        var dateVal = document.getElementById('bookingDate').value;
+        var errEl   = document.getElementById('dateError');
+        var dateInput = document.getElementById('bookingDate');
+
+        if (!dateVal) {
+            e.preventDefault();
+            dateInput.classList.add('is-invalid');
+            errEl.textContent = 'Please select a session date and time.';
+            return;
+        }
+
+        var chosen = new Date(dateVal);
+        var now    = new Date();
+        var max    = new Date(); max.setDate(max.getDate() + 30);
+
+        if (chosen <= now) {
+            e.preventDefault();
+            dateInput.classList.add('is-invalid');
+            errEl.textContent = 'Session date must be in the future.';
+            return;
+        }
+
+        if (chosen > max) {
+            e.preventDefault();
+            dateInput.classList.add('is-invalid');
+            errEl.textContent = 'Session date must be within the next 30 days.';
+            return;
+        }
+
+        dateInput.classList.remove('is-invalid');
+    });
+
+    // Clear error on change
+    document.getElementById('bookingDate').addEventListener('change', function () {
+        this.classList.remove('is-invalid');
+        document.getElementById('dateError').textContent = '';
+    });
+</script>

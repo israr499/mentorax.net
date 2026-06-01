@@ -1,0 +1,503 @@
+﻿@model List<User>
+@{
+    ViewData["Title"] = "All Users";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .stat-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 50px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .user-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 14px;
+        color: #fff;
+        flex-shrink: 0;
+    }
+
+    .role-student {
+        background: linear-gradient(135deg,#22c55e,#16a34a);
+    }
+
+    .role-tutor {
+        background: linear-gradient(135deg,#3b82f6,#2563eb);
+    }
+
+    .role-admin {
+        background: linear-gradient(135deg,#ef4444,#dc2626);
+    }
+
+    tr:hover td {
+        background: #f8f5ff !important;
+    }
+
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all .18s;
+        font-size: 13px;
+    }
+
+        .action-btn:hover {
+            transform: scale(1.12);
+        }
+
+    .toast-notify {
+        position: fixed;
+        top: 80px;
+        right: 24px;
+        z-index: 9999;
+        min-width: 260px;
+        border-radius: 10px;
+        padding: 14px 18px;
+        font-size: 14px;
+        box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        animation: slideInRight .3s ease;
+    }
+
+    @@keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(40px)
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0)
+        }
+    }
+</style>
+
+<div class="container-fluid">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-4 border-bottom">
+        <div>
+            <h2 class="mb-1 fw-bold"><i class="fas fa-users me-2 text-primary"></i>User Management</h2>
+            <p class="text-muted mb-0 small">Manage students, tutors, and admin accounts</p>
+        </div>
+        <a href="@Url.Action("Index")" class="btn btn-outline-secondary rounded-pill">
+            <i class="fas fa-arrow-left me-1"></i>Dashboard
+        </a>
+    </div>
+
+    <!-- Summary pills -->
+    @if (Model != null)
+    {
+        <div class="d-flex flex-wrap gap-2 mb-4">
+            <span class="stat-pill bg-light text-dark border">
+                <i class="fas fa-users text-primary"></i> Total: @Model.Count
+            </span>
+            <span class="stat-pill" style="background:#dcfce7;color:#16a34a">
+                <i class="fas fa-user-graduate"></i> Students: @Model.Count(u => u.Role == "Student")
+            </span>
+            <span class="stat-pill" style="background:#dbeafe;color:#2563eb">
+                <i class="fas fa-chalkboard-teacher"></i> Tutors: @Model.Count(u => u.Role == "Tutor")
+            </span>
+            <span class="stat-pill" style="background:#fee2e2;color:#dc2626">
+                <i class="fas fa-shield-alt"></i> Admins: @Model.Count(u => u.Role == "Admin")
+            </span>
+            <span class="stat-pill" style="background:#d1fae5;color:#059669">
+                <i class="fas fa-check-circle"></i> Active: @Model.Count(u => u.IsActive)
+            </span>
+            <span class="stat-pill" style="background:#fef2f2;color:#dc2626">
+                <i class="fas fa-ban"></i> Inactive: @Model.Count(u => !u.IsActive)
+            </span>
+        </div>
+    }
+
+    <div class="card shadow-sm border-0" style="border-radius:14px;overflow:hidden">
+        <div class="card-header d-flex justify-content-between align-items-center py-3"
+             style="background:linear-gradient(135deg,#667eea,#764ba2)">
+            <span class="text-white fw-semibold"><i class="fas fa-list me-2"></i>All Users</span>
+            <input id="searchInput" type="text" placeholder="Search users…"
+                   class="form-control form-control-sm w-auto"
+                   style="border-radius:20px;min-width:200px"
+                   oninput="filterTable(this.value)">
+        </div>
+
+        <div class="card-body p-0">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table id="usersTable" class="table table-hover mb-0 align-middle">
+                        <thead style="background:#f8f5ff">
+                            <tr>
+                                <th class="ps-3">User</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Phone</th>
+                                <th>Status</th>
+                                <th class="text-center" style="width:160px">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersBody">
+                            @foreach (var user in Model)
+                            {
+                                var avatarClass = user.Role == "Admin" ? "role-admin" : user.Role == "Tutor" ? "role-tutor" : "role-student";
+                                <tr data-search="@user.FullName.ToLower() @user.Email.ToLower() @user.Role.ToLower()">
+                                    <td class="ps-3">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="user-avatar @avatarClass">@(user.FullName?.Length > 0 ? user.FullName[0].ToString().ToUpper() : "?")</span>
+                                            <span class="fw-semibold" style="font-size:14px">@user.FullName</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-muted small">@user.Email</td>
+                                    <td>
+                                        <span class="badge rounded-pill px-2 py-1
+                                                            @(user.Role == "Admin" ? "bg-danger" : user.Role == "Tutor" ? "bg-primary" : "bg-success")">
+                                            @user.Role
+                                        </span>
+                                    </td>
+                                    <td class="text-muted small">@(string.IsNullOrEmpty(user.PhoneNumber) ? "—" : user.PhoneNumber)</td>
+                                    <td>
+                                        <span class="badge rounded-pill @(user.IsActive ? "bg-success" : "bg-secondary")">
+                                            <i class="fas fa-circle me-1" style="font-size:7px"></i>@(user.IsActive ? "Active" : "Inactive")
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="d-flex justify-content-center gap-1">
+                                            <!-- View Details -->
+                                            <button class="action-btn btn-view"
+                                                    style="background:#e0f2fe;color:#0284c7"
+                                                    title="View Details"
+                                                    data-id="@user.UserID"
+                                                    data-name="@user.FullName"
+                                                    data-email="@user.Email"
+                                                    data-role="@user.Role"
+                                                    data-phone="@(user.PhoneNumber ?? "—")"
+                                                    data-active="@user.IsActive.ToString().ToLower()">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+
+                                            <!-- Reset Password -->
+                                            <button class="action-btn btn-reset"
+                                                    style="background:#fef9c3;color:#ca8a04"
+                                                    title="Reset Password"
+                                                    data-id="@user.UserID"
+                                                    data-name="@user.FullName">
+                                                <i class="fas fa-key"></i>
+                                            </button>
+
+                                            @if (user.Role != "Admin")
+                                            {
+                                                <!--
+                                                    FIX: Deactivate/Activate buttons.
+                                                    The JS below calls POST /Admin/Deactivate/{id}
+                                                    and POST /Admin/Activate/{id} which match the
+                                                    [HttpPost] actions in AdminController.
+                                                -->
+                                                <button class="action-btn btn-toggle"
+                                                        style="background:@(user.IsActive ? "#fee2e2" : "#dcfce7");color:@(user.IsActive ? "#dc2626" : "#16a34a")"
+                                                        title="@(user.IsActive ? "Deactivate" : "Activate")"
+                                                        data-id="@user.UserID"
+                                                        data-name="@user.FullName"
+                                                        data-active="@user.IsActive.ToString().ToLower()">
+                                                    <i class="fas @(user.IsActive ? "fa-ban" : "fa-check")"></i>
+                                                </button>
+                                            }
+
+                                            @if (user.Role == "Tutor")
+                                            {
+                                                <!--
+                                                    FIX: Profile link passes user.UserID.
+                                                    AdminController.TutorDetails() accepts either a UserID
+                                                    or TutorID and resolves automatically via GetByUser lookup,
+                                                    so passing UserID here is correct.
+                                                -->
+                                                <a href="@Url.Action("TutorDetails", new { id = user.UserID })"
+                                                   class="action-btn text-decoration-none"
+                                                   style="background:#ede9fe;color:#7c3aed"
+                                                   title="View Tutor Profile">
+                                                    <i class="fas fa-chalkboard-user"></i>
+                                                </a>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center p-5 text-muted">
+                    <i class="fas fa-users-slash fa-3x mb-3 opacity-50"></i>
+                    <p>No users found.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- VIEW MODAL -->
+<div class="modal fade" id="userModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="border-radius:14px;overflow:hidden">
+            <div class="modal-header text-white py-3" style="background:linear-gradient(135deg,#667eea,#764ba2)">
+                <h5 class="modal-title fw-bold"><i class="fas fa-id-card me-2"></i>User Details</h5>
+                <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4" id="userDetailsBody"></div>
+            <div class="modal-footer border-0">
+                <button class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- RESET PASSWORD MODAL -->
+<div class="modal fade" id="resetModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="border-radius:14px;overflow:hidden">
+            <div class="modal-header py-3" style="background:#fef9c3">
+                <h5 class="modal-title fw-bold"><i class="fas fa-key me-2 text-warning"></i>Reset Password</h5>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="text-muted small mb-3">Resetting password for: <strong id="resetUserName"></strong></p>
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">New Password</label>
+                    <input type="password" id="newPassword" class="form-control" placeholder="Enter new password" />
+                </div>
+                <div class="mb-1">
+                    <label class="form-label small fw-semibold">Confirm Password</label>
+                    <input type="password" id="confirmPassword" class="form-control" placeholder="Confirm new password" />
+                </div>
+                <div id="pwError" class="text-danger small mt-2" style="display:none"></div>
+            </div>
+            <div class="modal-footer border-0">
+                <button class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn btn-warning rounded-pill px-4 fw-semibold" onclick="submitReset()">
+                    <i class="fas fa-save me-1"></i>Reset
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="border-radius:14px;overflow:hidden">
+            <div class="modal-header py-3" id="confirmHeader">
+                <h5 class="modal-title fw-bold" id="confirmTitle"><i class="fas fa-question-circle me-2"></i>Confirm Action</h5>
+                <button class="btn-close" data-bs-dismiss="modal" id="confirmClose"></button>
+            </div>
+            <div class="modal-body p-4" id="confirmText"></div>
+            <div class="modal-footer border-0">
+                <button class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn rounded-pill px-4 fw-semibold" id="confirmBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Use var for browser compatibility
+        var _resetUserId    = null;
+        var _resetUserName  = null;
+        var _actionUserId   = null;
+        var _actionIsActive = false;
+
+        var userModal    = new bootstrap.Modal(document.getElementById('userModal'));
+        var resetModal   = new bootstrap.Modal(document.getElementById('resetModal'));
+        var confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
+
+        // ── Search ───────────────────────────────────────────────
+        function filterTable(q) {
+            var rows = document.querySelectorAll('#usersBody tr');
+            var term = q.toLowerCase();
+            for (var i = 0; i < rows.length; i++) {
+                rows[i].style.display = rows[i].dataset.search.includes(term) ? '' : 'none';
+            }
+        }
+
+        // ── View button ──────────────────────────────────────────
+        document.querySelectorAll('.btn-view').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var d        = btn.dataset;
+                var isActive = d.active === 'true';
+                document.getElementById('userDetailsBody').innerHTML =
+                    '<div class="d-flex align-items-center gap-3 mb-4">' +
+                    '<div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);' +
+                    'display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:700">' +
+                    (d.name || '?')[0].toUpperCase() +
+                    '</div>' +
+                    '<div><h5 class="mb-0 fw-bold">' + d.name + '</h5>' +
+                    '<span class="badge ' + (d.role === 'Admin' ? 'bg-danger' : d.role === 'Tutor' ? 'bg-primary' : 'bg-success') + ' mt-1">' + d.role + '</span>' +
+                    '</div></div>' +
+                    '<table class="table table-borderless table-sm">' +
+                    '<tr><td class="text-muted fw-semibold" style="width:100px">User ID</td><td class="text-break small">' + d.id + '</td></tr>' +
+                    '<tr><td class="text-muted fw-semibold">Email</td><td>' + d.email + '</td></tr>' +
+                    '<tr><td class="text-muted fw-semibold">Phone</td><td>' + d.phone + '</td></tr>' +
+                    '<tr><td class="text-muted fw-semibold">Status</td>' +
+                    '<td><span class="badge ' + (isActive ? 'bg-success' : 'bg-secondary') + '">' + (isActive ? 'Active' : 'Inactive') + '</span></td></tr>' +
+                    '</table>';
+                userModal.show();
+            });
+        });
+
+        // ── Reset password button ────────────────────────────────
+        document.querySelectorAll('.btn-reset').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                _resetUserId   = btn.dataset.id;
+                _resetUserName = btn.dataset.name;
+                document.getElementById('resetUserName').textContent  = _resetUserName;
+                document.getElementById('newPassword').value          = '';
+                document.getElementById('confirmPassword').value      = '';
+                document.getElementById('pwError').style.display      = 'none';
+                resetModal.show();
+            });
+        });
+
+        function submitReset() {
+            var p    = document.getElementById('newPassword').value;
+            var c    = document.getElementById('confirmPassword').value;
+            var errEl = document.getElementById('pwError');
+            errEl.style.display = 'none';
+
+            if (!p || p.length < 4) {
+                errEl.textContent = 'Password must be at least 4 characters';
+                errEl.style.display = 'block';
+                return;
+            }
+            if (p !== c) {
+                errEl.textContent = 'Passwords do not match';
+                errEl.style.display = 'block';
+                return;
+            }
+
+            fetch('/Admin/ResetPassword/' + _resetUserId, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: p })
+            })
+            .then(function (r) {
+                resetModal.hide();
+                showToast(r.ok ? 'Password reset successfully ✅' : 'Failed to reset password ❌', r.ok);
+            })
+            .catch(function () { showToast('Network error ❌', false); });
+        }
+
+        // ── Toggle active/inactive button ────────────────────────
+        // FIX: Previously the JS used wrong fetch URLs. Now correctly calls:
+        //   POST /Admin/Deactivate/{id}  (to deactivate)
+        //   POST /Admin/Activate/{id}    (to activate)
+        // These match the [HttpPost] actions in AdminController.cs.
+        // UserService uses PUT, but AdminController accepts POST from the web UI
+        // and internally calls PutAsync to UserService — that chain is already correct.
+        document.querySelectorAll('.btn-toggle').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                _actionUserId   = btn.dataset.id;
+                _actionIsActive = btn.dataset.active === 'true';
+                var action = _actionIsActive ? 'Deactivate' : 'Activate';
+
+                // Try to get the user's name from the same table row
+                var row  = btn.closest('tr');
+                var name = row ? (row.querySelector('.fw-semibold') ? row.querySelector('.fw-semibold').textContent.trim() : 'this user') : 'this user';
+
+                var header = document.getElementById('confirmHeader');
+                var title  = document.getElementById('confirmTitle');
+                var text   = document.getElementById('confirmText');
+                var cb     = document.getElementById('confirmBtn');
+                var closeX = document.getElementById('confirmClose');
+
+                if (_actionIsActive) {
+                    header.style.background = '#fee2e2';
+                    header.style.color      = '#dc2626';
+                    title.innerHTML  = '<i class="fas fa-ban me-2"></i>Deactivate User';
+                    cb.className     = 'btn btn-danger rounded-pill px-4 fw-semibold';
+                    cb.textContent   = 'Deactivate';
+                    closeX.classList.remove('btn-close-white');
+                } else {
+                    header.style.background = '#dcfce7';
+                    header.style.color      = '#16a34a';
+                    title.innerHTML  = '<i class="fas fa-check-circle me-2"></i>Activate User';
+                    cb.className     = 'btn btn-success rounded-pill px-4 fw-semibold';
+                    cb.textContent   = 'Activate';
+                    closeX.classList.remove('btn-close-white');
+                }
+
+                text.innerHTML = '<p>' + action + ' account for <strong>' + name + '</strong>?</p>' +
+                    '<p class="text-muted small mb-0">' +
+                    (_actionIsActive
+                        ? 'The user will not be able to login until reactivated.'
+                        : 'The user will regain full access to the platform.') +
+                    '</p>';
+
+                confirmModal.show();
+            });
+        });
+
+        document.getElementById('confirmBtn').addEventListener('click', function () {
+            // FIX: Use the correct endpoint paths matching AdminController [HttpPost] actions
+            var action = _actionIsActive ? 'Deactivate' : 'Activate';
+            var self   = this;
+            self.disabled = true;
+            self.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Processing…';
+
+            // POST to /Admin/Deactivate/{id} or /Admin/Activate/{id}
+            fetch('/Admin/' + action + '/' + _actionUserId, { method: 'POST' })
+            .then(function (r) {
+                confirmModal.hide();
+                if (r.ok) {
+                    showToast('User ' + action.toLowerCase() + 'd successfully ✅', true);
+                    setTimeout(function () { location.reload(); }, 1200);
+                } else {
+                    showToast('Failed to ' + action.toLowerCase() + ' user ❌', false);
+                    self.disabled  = false;
+                    self.textContent = action;
+                }
+            })
+            .catch(function () {
+                showToast('Network error ❌', false);
+                self.disabled = false;
+                self.textContent = action;
+            });
+        });
+
+        // ── Toast notification ───────────────────────────────────
+        function showToast(msg, success) {
+            var existing = document.querySelector('.toast-notify');
+            if (existing) existing.parentNode.removeChild(existing);
+
+            var toast = document.createElement('div');
+            toast.className        = 'toast-notify';
+            toast.style.background = success ? '#dcfce7' : '#fee2e2';
+            toast.style.color      = success ? '#16a34a' : '#dc2626';
+            toast.style.border     = '1px solid ' + (success ? '#86efac' : '#fca5a5');
+            toast.innerHTML        = msg;
+            document.body.appendChild(toast);
+
+            setTimeout(function () {
+                toast.style.opacity    = '0';
+                toast.style.transition = 'opacity .4s';
+                setTimeout(function () {
+                    if (toast.parentNode) toast.parentNode.removeChild(toast);
+                }, 400);
+            }, 3000);
+        }
+    </script>
+}

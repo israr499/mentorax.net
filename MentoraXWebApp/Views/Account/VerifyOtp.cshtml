@@ -1,0 +1,404 @@
+﻿@model MentoraXWebApp.Models.VerifyOtpViewModel
+
+@{
+    ViewData["Title"] = "Verify OTP - MentoraX";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        :root {
+            --brand-from: #667eea;
+            --brand-to: #764ba2;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--brand-from) 0%, var(--brand-to) 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .otp-card {
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+            overflow: hidden;
+            max-width: 460px;
+            width: 100%;
+        }
+
+        .otp-header {
+            background: linear-gradient(135deg, var(--brand-from) 0%, var(--brand-to) 100%);
+            color: white;
+            padding: 36px 30px;
+            text-align: center;
+        }
+
+            .otp-header .shield-icon {
+                width: 64px;
+                height: 64px;
+                background: rgba(255,255,255,.2);
+                border-radius: 50%;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 12px;
+                font-size: 28px;
+            }
+
+        .otp-body {
+            background: white;
+            padding: 36px 40px;
+        }
+
+        /* Individual OTP digit boxes */
+        .otp-inputs {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 24px 0;
+        }
+
+        .otp-digit {
+            width: 52px;
+            height: 60px;
+            text-align: center;
+            font-size: 26px;
+            font-weight: 700;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            outline: none;
+            transition: border-color .2s, box-shadow .2s;
+            color: #333;
+        }
+
+            .otp-digit:focus {
+                border-color: var(--brand-from);
+                box-shadow: 0 0 0 3px rgba(102,126,234,.18);
+            }
+
+            .otp-digit.filled {
+                border-color: var(--brand-from);
+                background: #f8f7ff;
+            }
+
+        /* Hidden combined field (submitted to server) */
+        #OtpCode {
+            display: none;
+        }
+
+        .btn-verify {
+            background: linear-gradient(135deg, var(--brand-from) 0%, var(--brand-to) 100%);
+            border: none;
+            padding: 13px;
+            font-weight: 700;
+            font-size: 16px;
+            letter-spacing: .5px;
+            transition: opacity .2s, transform .1s;
+        }
+
+            .btn-verify:hover {
+                opacity: .92;
+                transform: translateY(-1px);
+            }
+
+            .btn-verify:active {
+                transform: translateY(0);
+            }
+
+        .timer-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #f0f0ff;
+            color: var(--brand-from);
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+            .timer-badge.expired {
+                background: #fff0f0;
+                color: #dc3545;
+            }
+
+        #resend-btn {
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--brand-from);
+            background: none;
+            border: none;
+            padding: 0;
+            text-decoration: underline;
+        }
+
+            #resend-btn:disabled {
+                color: #aaa;
+                text-decoration: none;
+                cursor: not-allowed;
+            }
+
+        .back-link {
+            color: #888;
+            font-size: 13px;
+        }
+
+            .back-link:hover {
+                color: var(--brand-from);
+            }
+
+        .toast-container {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            z-index: 9999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container px-3">
+        <div class="otp-card mx-auto">
+            <!-- Header -->
+            <div class="otp-header">
+                <div class="shield-icon">
+                    <i class="fas fa-shield-halved"></i>
+                </div>
+                <h2 class="mb-1 fw-bold">Verify Your Identity</h2>
+                <p class="mb-0 opacity-85">
+                    We sent a 6-digit code to<br />
+                    <strong>@Model.MaskedEmail</strong>
+                </p>
+            </div>
+
+            <!-- Body -->
+            <div class="otp-body">
+
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger rounded-3 py-2 small" role="alert">
+                        <i class="fas fa-circle-exclamation me-1"></i> @TempData["Error"]
+                    </div>
+                }
+
+                @if (ViewBag.Error != null)
+                {
+                    <div class="alert alert-danger rounded-3 py-2 small" role="alert">
+                        <i class="fas fa-circle-exclamation me-1"></i> @ViewBag.Error
+                    </div>
+                }
+
+                <!-- Timer -->
+                <div class="text-center mb-3">
+                    <span class="timer-badge" id="timer-badge">
+                        <i class="fas fa-clock"></i>
+                        Code expires in <span id="countdown">09:59</span>
+                    </span>
+                </div>
+
+                <form asp-action="VerifyOtp" method="post" id="otp-form">
+                    <input type="hidden" asp-for="PendingUserId" />
+                    <input type="hidden" asp-for="OtpCode" id="OtpCode" />
+
+                    <!-- 6 digit boxes -->
+                    <div class="otp-inputs" id="otp-boxes">
+                        @for (int i = 0; i < 6; i++)
+                        {
+                            <input type="text"
+                                   inputmode="numeric"
+                                   pattern="[0-9]"
+                                   maxlength="1"
+                                   class="otp-digit form-control"
+                                   data-index="@i"
+                                   autocomplete="off"
+                                   aria-label="Digit @(i + 1) of 6" />
+                        }
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-verify w-100 rounded-3"
+                            id="submit-btn" disabled>
+                        <i class="fas fa-check-circle me-2"></i>Verify & Continue
+                    </button>
+                </form>
+
+                <!-- Resend -->
+                <div class="text-center mt-3 small">
+                    Didn't get the code?
+                    <button id="resend-btn" disabled>Resend OTP</button>
+                    <span id="resend-timer" class="text-muted">(wait <span id="resend-secs">30</span>s)</span>
+                </div>
+
+                <div class="text-center mt-3">
+                    <a asp-action="Login" class="back-link">
+                        <i class="fas fa-arrow-left me-1"></i>Back to Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast for resend feedback -->
+    <div class="toast-container">
+        <div id="toast" class="toast text-bg-success border-0 rounded-3 shadow" role="alert" aria-live="polite">
+            <div class="d-flex align-items-center px-3 py-2 gap-2">
+                <i class="fas fa-envelope-circle-check"></i>
+                <span id="toast-msg" class="small fw-semibold">OTP resent!</span>
+                <button type="button" class="btn-close btn-close-white ms-auto"
+                        data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function () {
+            // ── OTP digit input handling ───────────────────────────────────
+            const boxes      = Array.from(document.querySelectorAll('.otp-digit'));
+            const hiddenOtp  = document.getElementById('OtpCode');
+            const submitBtn  = document.getElementById('submit-btn');
+
+            function syncHidden() {
+                const val = boxes.map(b => b.value).join('');
+                hiddenOtp.value = val;
+                submitBtn.disabled = (val.length < 6);
+                boxes.forEach(b => b.classList.toggle('filled', b.value !== ''));
+            }
+
+            boxes.forEach((box, idx) => {
+                box.addEventListener('input', e => {
+                    const ch = e.data || box.value;
+                    if (/^\d+$/.test(ch) && ch.length > 0) {
+                        box.value = ch[ch.length - 1];
+                        if (idx < 5) boxes[idx + 1].focus();
+                    } else {
+                        box.value = '';
+                    }
+                    syncHidden();
+                });
+
+                box.addEventListener('keydown', e => {
+                    if (e.key === 'Backspace' && box.value === '' && idx > 0) {
+                        boxes[idx - 1].focus();
+                        boxes[idx - 1].value = '';
+                        syncHidden();
+                    }
+                    if (e.key === 'ArrowLeft'  && idx > 0)     boxes[idx - 1].focus();
+                    if (e.key === 'ArrowRight' && idx < 5)     boxes[idx + 1].focus();
+                });
+
+                // Handle paste into any box
+                box.addEventListener('paste', e => {
+                    e.preventDefault();
+                    const text = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
+                    if (!text) return;
+                    boxes.forEach((b, i) => { b.value = text[i] || ''; });
+                    const last = Math.min(text.length, 6) - 1;
+                    boxes[Math.max(0, last)].focus();
+                    syncHidden();
+                });
+            });
+
+            // Auto-focus first box
+            boxes[0].focus();
+
+            // ── Expiry countdown (10 minutes = 600 seconds) ───────────────
+            let totalSecs = 600;
+            const countdown  = document.getElementById('countdown');
+            const timerBadge = document.getElementById('timer-badge');
+
+            function updateCountdown() {
+                if (totalSecs <= 0) {
+                    countdown.textContent  = '00:00';
+                    timerBadge.classList.add('expired');
+                    timerBadge.innerHTML   = '<i class="fas fa-clock-rotate-left"></i> Code expired — please resend';
+                    submitBtn.disabled     = true;
+                    return;
+                }
+                totalSecs--;
+                const m = String(Math.floor(totalSecs / 60)).padStart(2, '0');
+                const s = String(totalSecs % 60).padStart(2, '0');
+                countdown.textContent = `${m}:${s}`;
+            }
+
+            const expiryInterval = setInterval(() => {
+                updateCountdown();
+                if (totalSecs <= 0) clearInterval(expiryInterval);
+            }, 1000);
+
+            // ── Resend OTP ─────────────────────────────────────────────────
+            let resendSecs   = 30;
+            const resendBtn  = document.getElementById('resend-btn');
+            const resendTimer = document.getElementById('resend-timer');
+            const resendSecsEl = document.getElementById('resend-secs');
+            const toastEl    = document.getElementById('toast');
+            const toastMsg   = document.getElementById('toast-msg');
+            const bsToast    = new bootstrap.Toast(toastEl, { delay: 4000 });
+
+            const resendInterval = setInterval(() => {
+                resendSecs--;
+                resendSecsEl.textContent = resendSecs;
+                if (resendSecs <= 0) {
+                    clearInterval(resendInterval);
+                    resendBtn.disabled = false;
+                    resendTimer.style.display = 'none';
+                }
+            }, 1000);
+
+            resendBtn.addEventListener('click', async () => {
+                resendBtn.disabled = true;
+                resendTimer.style.display = '';
+                resendSecs = 30;
+                resendSecsEl.textContent = resendSecs;
+
+                try {
+                    const res = await fetch('@Url.Action("ResendOtp", "Account")', {
+                        method: 'POST',
+                        headers: {
+                            'RequestVerificationToken':
+                                document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? ''
+                        }
+                    });
+                    const data = await res.json();
+                    toastEl.classList.remove('text-bg-success','text-bg-danger');
+                    toastEl.classList.add(data.success ? 'text-bg-success' : 'text-bg-danger');
+                    toastMsg.textContent = data.message;
+                    bsToast.show();
+
+                    if (data.success) {
+                        totalSecs = 600;   // reset expiry timer
+                        timerBadge.classList.remove('expired');
+                        timerBadge.innerHTML = '<i class="fas fa-clock"></i> Code expires in <span id="countdown">09:59</span>';
+                    }
+
+                    let rs = 30;
+                    const ri = setInterval(() => {
+                        rs--;
+                        resendSecsEl.textContent = rs;
+                        if (rs <= 0) {
+                            clearInterval(ri);
+                            resendBtn.disabled = false;
+                            resendTimer.style.display = 'none';
+                        }
+                    }, 1000);
+
+                } catch (err) {
+                    toastEl.classList.remove('text-bg-success');
+                    toastEl.classList.add('text-bg-danger');
+                    toastMsg.textContent = 'Network error. Please try again.';
+                    bsToast.show();
+                    resendBtn.disabled = false;
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

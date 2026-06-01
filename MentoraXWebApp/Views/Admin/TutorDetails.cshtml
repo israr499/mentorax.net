@@ -1,0 +1,369 @@
+﻿@using MentoraXWebApp.Helpers
+@model MentoraXWebApp.Models.TutorProfile
+@{
+    ViewData["Title"] = $"{Model?.FullName ?? "Tutor"} — Admin View";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var reviews = ViewBag.Reviews as List<MentoraXWebApp.Models.ReviewRequest>;
+    var avgRating = reviews != null && reviews.Any() ? reviews.Average(r => r.Rating) : 0.0;
+    var isPending = Model?.Status == "Pending";
+    var isApproved = Model?.Status == "Approved";
+    var isRejected = Model?.Status == "Rejected";
+}
+
+<style>
+    .profile-hero {
+        background: linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+        color: #fff;
+        border-radius: 20px;
+        padding: 32px;
+        margin-bottom: 24px;
+    }
+
+    .profile-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.25);
+        font-size: 32px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 3px solid rgba(255,255,255,.6);
+    }
+
+    .subject-pill {
+        background: #f0eeff;
+        color: #764ba2;
+        border-radius: 50px;
+        padding: 5px 14px;
+        font-size: 12.5px;
+        font-weight: 600;
+    }
+
+    .review-card {
+        border-left: 3px solid #fbbf24;
+        padding: 12px 16px;
+        background: #fffbeb;
+        border-radius: 0 10px 10px 0;
+        margin-bottom: 12px;
+    }
+
+    .stat-box {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 12px;
+        text-align: center;
+    }
+
+    .admin-action-card {
+        border-radius: 14px;
+        border: none;
+    }
+
+    .info-row {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        margin-bottom: 10px;
+        font-size: 14px;
+    }
+
+        .info-row i {
+            width: 20px;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+</style>
+
+<!-- ── Back navigation ──────────────────────────────────────────── -->
+<div class="d-flex align-items-center gap-3 mb-4">
+    <a href="@Url.Action("AllUsers", "Admin")"
+       class="btn btn-outline-secondary rounded-pill px-3">
+        <i class="fas fa-arrow-left me-2"></i>Back to Users
+    </a>
+    <h5 class="mb-0 fw-bold text-muted">
+        <i class="fas fa-chalkboard-user me-2 text-primary"></i>Tutor Profile — Admin View
+    </h5>
+</div>
+
+@if (!string.IsNullOrEmpty(Model?.IntroVideoUrl))
+{
+    <div class="card border-0 shadow-sm mb-4" style="border-radius:16px;overflow:hidden">
+        <div class="card-header text-white fw-semibold" style="background:linear-gradient(135deg,#ef4444,#dc2626)">
+            <i class="fas fa-video me-2"></i>Intro Video
+        </div>
+        <div class="card-body p-0">
+            <div class="ratio ratio-16x9">
+                <iframe src="@VideoHelper.GetEmbedUrl(Model.IntroVideoUrl)" title="Intro Video" allowfullscreen></iframe>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="row g-4">
+
+    <!-- ── Left Sidebar ─────────────────────────────────────────── -->
+    <div class="col-lg-4">
+
+        <!-- Profile Hero -->
+        <div class="profile-hero shadow-sm mb-3">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="profile-avatar">
+                    @(Model?.FullName?.Length > 0 ? Model.FullName[0].ToString().ToUpper() : "T")
+                </div>
+                <div>
+                    <h4 class="fw-bold mb-0">@Model?.FullName</h4>
+                    <small class="opacity-75">@Model?.Specialization</small>
+                </div>
+            </div>
+
+            @if (avgRating > 0)
+            {
+                <div class="mb-2">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        <i class="@(i <= Math.Round(avgRating) ? "fas" : "far") fa-star" style="color:#fbbf24;font-size:14px"></i>
+                    }
+                    <span class="ms-1 small opacity-90">@avgRating.ToString("F1") (@reviews?.Count reviews)</span>
+                </div>
+            }
+
+            <p class="mb-0 small opacity-85">@Model?.Bio</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="row g-2 mb-3">
+            <div class="col-4">
+                <div class="stat-box">
+                    <div class="fw-bold text-primary">@Model?.ExperienceYears</div>
+                    <div class="text-muted" style="font-size:11px">Years Exp</div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="stat-box">
+                    <div class="fw-bold text-success">$@Model?.HourlyRate</div>
+                    <div class="text-muted" style="font-size:11px">Per Hour</div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="stat-box">
+                    <div class="fw-bold text-warning">@(reviews?.Count ?? 0)</div>
+                    <div class="text-muted" style="font-size:11px">Reviews</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Details -->
+        <div class="card border-0 shadow-sm mb-3" style="border-radius:14px">
+            <div class="card-body">
+                <div class="info-row">
+                    <i class="fas fa-graduation-cap text-primary"></i>
+                    <span><strong>Qualification:</strong> @Model?.Qualification</span>
+                </div>
+                <div class="info-row">
+                    <i class="fas fa-briefcase text-primary"></i>
+                    <span><strong>Experience:</strong> @Model?.ExperienceYears years</span>
+                </div>
+                @if (!string.IsNullOrEmpty(Model?.TutorID))
+                {
+                    <div class="info-row">
+                        <i class="fas fa-fingerprint text-muted"></i>
+                        <span class="text-muted small text-break"><strong>TutorID:</strong> @Model.TutorID</span>
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(Model?.UserID))
+                {
+                    <div class="info-row">
+                        <i class="fas fa-user text-muted"></i>
+                        <span class="text-muted small text-break"><strong>UserID:</strong> @Model.UserID</span>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- ── Admin Actions ──────────────────────────────────────── -->
+        <div class="card shadow-sm admin-action-card mb-3"
+             style="border-top: 3px solid @(isPending ? "#f59e0b" : isApproved ? "#22c55e" : "#ef4444")">
+            <div class="card-header fw-semibold"
+                 style="background:@(isPending ? "#fefce8" : isApproved ? "#f0fdf4" : "#fef2f2")">
+                <i class="fas fa-shield-alt me-2"
+                   style="color:@(isPending ? "#d97706" : isApproved ? "#16a34a" : "#dc2626")"></i>
+                Account Status:
+                <span class="badge ms-1
+                    @(isPending ? "bg-warning text-dark" :
+                                            isApproved ? "bg-success" : "bg-danger")">
+                    @Model?.Status
+                </span>
+            </div>
+            <div class="card-body d-grid gap-2">
+                @if (isPending || isRejected)
+                {
+                    <form asp-action="ApproveTutor" method="post">
+                        <input type="hidden" name="tutorId" value="@Model?.TutorID" />
+                        <input type="hidden" name="isApproved" value="true" />
+                        <button type="submit" class="btn btn-success rounded-pill w-100">
+                            <i class="fas fa-check-circle me-2"></i>Approve Tutor
+                        </button>
+                    </form>
+                }
+                @if (isPending || isApproved)
+                {
+                    <button type="button"
+                            class="btn btn-danger rounded-pill w-100"
+                            data-bs-toggle="modal"
+                            data-bs-target="#rejectModal">
+                        <i class="fas fa-times-circle me-2"></i>Reject Tutor
+                    </button>
+                }
+                @if (isApproved)
+                {
+                    <div class="alert alert-success py-2 mb-0 rounded-3 text-center small">
+                        <i class="fas fa-check me-1"></i>This tutor is approved and active
+                    </div>
+                }
+            </div>
+        </div>
+
+    </div><!-- /col-lg-4 -->
+    <!-- ── Right Content ─────────────────────────────────────────── -->
+    <div class="col-lg-8">
+
+        <!-- Subjects -->
+        <div class="card border-0 shadow-sm mb-4" style="border-radius:16px">
+            <div class="card-header fw-semibold text-white"
+                 style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:16px 16px 0 0">
+                <i class="fas fa-book me-2"></i>Subjects Taught
+            </div>
+            <div class="card-body">
+                @if (Model?.Subjects != null && Model.Subjects.Any())
+                {
+                    <div class="d-flex flex-wrap gap-2">
+                        @foreach (var s in Model.Subjects)
+                        {
+                            <span class="subject-pill">
+                                <i class="fas fa-bookmark me-1 opacity-60"></i>@s.SubjectName
+                                @if (!string.IsNullOrEmpty(s.GradeLevel))
+                                {
+                                    <span class="opacity-70 ms-1">· @s.GradeLevel</span>
+                                }
+                            </span>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">No subjects listed yet.</p>
+                }
+            </div>
+        </div>
+
+        <!-- Weekly Availability -->
+        <div class="card border-0 shadow-sm mb-4" style="border-radius:16px">
+            <div class="card-header bg-success text-white fw-semibold" style="border-radius:16px 16px 0 0">
+                <i class="fas fa-clock me-2"></i>Weekly Availability
+            </div>
+            <div class="card-body p-0">
+                @if (Model?.Availability != null && Model.Availability.Any())
+                {
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-3">Day</th>
+                                <th>Time Window</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var a in Model.Availability)
+                            {
+                                <tr>
+                                    <td class="ps-3 fw-semibold">
+                                        <i class="fas fa-calendar-day text-success me-2 opacity-60"></i>@a.DayName
+                                    </td>
+                                    <td>@a.StartTime.ToString(@"hh\:mm") – @a.EndTime.ToString(@"hh\:mm")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <div class="p-3 text-muted">No availability set.</div>
+                }
+            </div>
+        </div>
+
+        <!-- Reviews -->
+        <div class="card border-0 shadow-sm" style="border-radius:16px">
+            <div class="card-header fw-semibold" style="background:#fef9c3;border-radius:16px 16px 0 0">
+                <i class="fas fa-star text-warning me-2"></i>Student Reviews
+                @if (reviews != null && reviews.Any())
+                {
+                    <span class="badge bg-warning text-dark ms-2">@reviews.Count</span>
+                }
+            </div>
+            <div class="card-body">
+                @if (reviews != null && reviews.Any())
+                {
+                    @foreach (var r in reviews)
+                    {
+                        <div class="review-card">
+                            <div class="mb-1">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    <i class="@(i <= r.Rating ? "fas" : "far") fa-star text-warning" style="font-size:13px"></i>
+                                }
+                                <span class="ms-1 text-muted small">@r.Rating / 5</span>
+                            </div>
+                            <p class="mb-1 small">@r.Comment</p>
+                            <small class="text-muted">— Verified Student</small>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="text-center text-muted py-3">
+                        <i class="fas fa-star fa-2x mb-2 opacity-30"></i>
+                        <p class="mb-0">No reviews yet.</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+    </div><!-- /col-lg-8 -->
+</div>
+
+<!-- ── Rejection Reason Modal ────────────────────────────────────── -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="border-radius:14px;overflow:hidden">
+            <div class="modal-header py-3" style="background:#fee2e2">
+                <h5 class="modal-title fw-bold text-danger">
+                    <i class="fas fa-times-circle me-2"></i>Reject Tutor
+                </h5>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="text-muted small mb-3">
+                    Rejecting <strong>@Model?.FullName</strong>. Please provide a reason (optional):
+                </p>
+                <textarea id="rejectionReason"
+                          class="form-control"
+                          rows="3"
+                          placeholder="e.g. Incomplete credentials, unverifiable qualification…"></textarea>
+            </div>
+            <div class="modal-footer border-0">
+                <button class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                <form asp-action="ApproveTutor" method="post" id="rejectForm">
+                    <input type="hidden" name="tutorId" value="@Model?.TutorID" />
+                    <input type="hidden" name="isApproved" value="false" />
+                    <input type="hidden" name="rejectionReason" id="hiddenReason" value="" />
+                    <button type="submit" class="btn btn-danger rounded-pill px-4 fw-semibold"
+                            onclick="document.getElementById('hiddenReason').value = document.getElementById('rejectionReason').value">
+                        <i class="fas fa-times me-1"></i>Confirm Rejection
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

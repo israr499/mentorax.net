@@ -1,0 +1,78 @@
+﻿@model List<MentoraXWebApp.Models.Booking>
+
+@{
+    ViewData["Title"] = "My Bookings";
+}
+
+<div class="container mt-4">
+    <h1>My Bookings</h1>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Student</th>
+                        <th>Topic</th>
+                        <th>Date & Time</th>
+                        <th>Duration</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var booking in Model)
+                    {
+                        <tr>
+                            <td>@booking.StudentName</td>
+                            <td>@booking.Topic</td>
+                            <td>@booking.BookingDate.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>@booking.DurationHours hrs</td>
+                            <td>$@booking.TotalAmount</td>
+                            <td>
+                                @if (booking.Status == "Pending")
+                                {
+                                    <span class="badge bg-warning">Pending</span>
+                                }
+                                else if (booking.Status == "Confirmed")
+                                {
+                                    <span class="badge bg-success">Confirmed</span>
+                                }
+                                else if (booking.Status == "Completed")
+                                {
+                                    <span class="badge bg-info">Completed</span>
+                                }
+                                else if (booking.Status == "Cancelled")
+                                {
+                                    <span class="badge bg-danger">Cancelled</span>
+                                }
+                            </td>
+                            <td>
+                                @if (booking.Status == "Pending")
+                                {
+                                    <form asp-action="ConfirmBooking" method="post" style="display:inline">
+                                        <input type="hidden" name="bookingId" value="@booking.BookingID" />
+                                        <button type="submit" class="btn btn-success btn-sm">Confirm</button>
+                                    </form>
+                                }
+                                @if (booking.Status == "Confirmed")
+                                {
+                                    <form asp-action="CompleteBooking" method="post" style="display:inline">
+                                        <input type="hidden" name="bookingId" value="@booking.BookingID" />
+                                        <button type="submit" class="btn btn-info btn-sm">Complete</button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">No bookings yet.</div>
+    }
+</div>

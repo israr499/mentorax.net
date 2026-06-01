@@ -1,0 +1,141 @@
+@{
+    ViewData["Title"] = "Revenue Report";
+    var gatewayUrl = "https://mentorax-gateway-hgcsbda0dka9fef6.southeastasia-01.azurewebsites.net";
+}
+
+<!-- Hidden gateway base for JS -->
+<input type="hidden" id="gatewayBase" value="@gatewayUrl" />
+
+<div class="container-fluid mt-4 px-4">
+
+    <!-- Page Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+        <div>
+            <h4 class="fw-bold mb-0"><i class="fas fa-chart-line me-2 text-primary"></i>Revenue Report</h4>
+            <p class="text-muted small mb-0">Platform earnings overview. Only <strong>Completed</strong> bookings count as revenue.</p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <button class="btn btn-success btn-sm rounded-pill px-3" onclick="downloadRevenueCsv()">
+                <i class="fas fa-file-csv me-1"></i>Export CSV
+            </button>
+            <a asp-action="Index" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                <i class="fas fa-arrow-left me-1"></i>Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Quick Filters -->
+    <div class="card border-0 shadow-sm mb-4" style="border-radius:16px">
+        <div class="card-body py-3">
+            <form id="revenueFilterForm" class="row g-2 align-items-end">
+                <div class="col-auto">
+                    <label class="form-label small fw-semibold mb-1">From</label>
+                    <input type="date" id="fromDate" name="fromDate" class="form-control form-control-sm rounded-pill"
+                           value="@ViewBag.FromDate" style="min-width:140px" />
+                </div>
+                <div class="col-auto">
+                    <label class="form-label small fw-semibold mb-1">To</label>
+                    <input type="date" id="toDate" name="toDate" class="form-control form-control-sm rounded-pill"
+                           value="@ViewBag.ToDate" style="min-width:140px" />
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary btn-sm rounded-pill px-3">
+                        <i class="fas fa-search me-1"></i>Apply
+                    </button>
+                </div>
+                <div class="col-auto d-flex gap-2 flex-wrap">
+                    <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill" data-quick-filter="today">Today</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill" data-quick-filter="week">This Week</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill" data-quick-filter="month">This Month</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Loading / Error states -->
+    <div id="revenueLoading" class="text-center py-5" style="display:none">
+        <i class="fas fa-circle-notch fa-spin fa-2x text-primary mb-2"></i>
+        <p class="text-muted">Loading revenue data…</p>
+    </div>
+    <div id="revenueError" class="alert alert-danger" style="display:none"></div>
+
+    <!-- Content -->
+    <div id="revenueContent">
+
+        <!-- Summary Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-sm-6 col-lg-4">
+                <div class="revenue-card">
+                    <h3><i class="fas fa-dollar-sign me-1"></i>Gross Revenue</h3>
+                    <p class="amount" id="admin-gross">—</p>
+                    <small style="opacity:.8">100% of completed bookings</small>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                <div class="revenue-card" style="background:linear-gradient(135deg,#11998e,#38ef7d)">
+                    <h3><i class="fas fa-hand-holding-usd me-1"></i>Platform Commission</h3>
+                    <p class="amount" id="admin-commission">—</p>
+                    <small style="opacity:.8">30% platform fee</small>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                <div class="revenue-card" style="background:linear-gradient(135deg,#764ba2,#667eea)">
+                    <h3><i class="fas fa-chalkboard-teacher me-1"></i>Tutor Payouts</h3>
+                    <p class="amount" id="admin-tutors">—</p>
+                    <small style="opacity:.8">70% to tutors</small>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-6">
+                <div class="card border-0 shadow-sm text-center py-3" style="border-radius:16px">
+                    <div class="h2 fw-bold text-primary mb-0" id="admin-bookings">—</div>
+                    <div class="text-muted small">Completed Bookings</div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-6">
+                <div class="card border-0 shadow-sm text-center py-3" style="border-radius:16px">
+                    <div class="h2 fw-bold text-success mb-0" id="admin-hours">—</div>
+                    <div class="text-muted small">Total Hours Taught</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Booking Detail Table -->
+        <div class="card border-0 shadow-sm" style="border-radius:16px">
+            <div class="card-header border-0 fw-semibold text-white rounded-top-3"
+                 style="background:linear-gradient(135deg,#0078d4,#2b88d8)">
+                <i class="fas fa-table me-2"></i>Booking Details
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Booking ID</th>
+                                <th>Date</th>
+                                <th>Tutor ID</th>
+                                <th>Duration</th>
+                                <th class="text-success">Gross</th>
+                                <th class="text-danger">Platform (30%)</th>
+                                <th class="text-primary">Tutor (70%)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bookingsTableBody">
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-4">
+                                    <i class="fas fa-circle-notch fa-spin me-2"></i>Loading…
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- #revenueContent -->
+
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="~/js/revenue.js"></script>
+}

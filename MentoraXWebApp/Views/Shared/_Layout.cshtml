@@ -1,0 +1,191 @@
+﻿
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - MentoraX</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/chat.css" asp-append-version="true" />
+</head>
+<body>
+    @{
+        var userRole = Context.Session.GetString("UserRole");
+        var isLoggedIn = !string.IsNullOrEmpty(userRole);
+        var fullName = Context.Session.GetString("UserFullName") ?? "";
+        var initial = fullName.Length > 0 ? fullName[0].ToString().ToUpper() : "U";
+    }
+
+    <!-- ── Toast Container ── -->
+    <div class="toast-container-top" id="toastContainer"></div>
+
+    <!-- ── Navbar ── -->
+    <header>
+        <nav class="navbar navbar-expand-lg">
+            <div class="container-fluid px-4">
+
+                <!-- Brand -->
+                <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+                    <i class="fas fa-graduation-cap me-1"></i>MentoraX
+                </a>
+
+                <!-- Hamburger -->
+                <button class="navbar-toggler border-0" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#mainNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Nav links -->
+                <div class="collapse navbar-collapse" id="mainNav">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-1">
+                        @if (isLoggedIn)
+                        {
+                            @if (userRole == "Student")
+                            {
+                                <li class="nav-item"><a class="nav-link" asp-controller="Student" asp-action="Index"><i class="fas fa-search me-1 opacity-50"></i>Find Tutors</a></li>
+                                <li class="nav-item"><a class="nav-link" asp-controller="Student" asp-action="MyBookings"><i class="fas fa-calendar me-1 opacity-50"></i>My Bookings</a></li>
+                            }
+                            else if (userRole == "Tutor")
+                            {
+                                <li class="nav-item"><a class="nav-link" asp-controller="Tutor" asp-action="Dashboard"><i class="fas fa-chart-bar me-1 opacity-50"></i>Dashboard</a></li>
+                                <li class="nav-item"><a class="nav-link" asp-controller="Tutor" asp-action="MyBookings"><i class="fas fa-calendar me-1 opacity-50"></i>My Bookings</a></li>
+                            }
+                            else if (userRole == "Admin")
+                            {
+                                <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="Index"><i class="fas fa-tachometer-alt me-1 opacity-50"></i>Dashboard</a></li>
+                                <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="AllUsers"><i class="fas fa-users me-1 opacity-50"></i>Users</a></li>
+                                <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="AllBookings"><i class="fas fa-book me-1 opacity-50"></i>Bookings</a></li>
+                                <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="Revenue"><i class="fas fa-chart-line me-1 opacity-50"></i>Revenue</a></li>
+                            }
+                        }
+                        else
+                        {
+                            <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">Home</a></li>
+                        }
+                    </ul>
+
+                    <!-- Right side -->
+                    <ul class="navbar-nav align-items-center gap-2">
+                        @if (isLoggedIn)
+                        {
+                            <li class="nav-item">
+                                <span class="nav-user-pill">
+                                    <span class="nav-user-avatar">@initial</span>
+                                    @fullName
+                                </span>
+                            </li>
+                            <li class="nav-item">
+                                <a class="btn-nav-logout" asp-controller="Account" asp-action="Logout">
+                                    <i class="fas fa-sign-out-alt me-1"></i>Logout
+                                </a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item"><a class="nav-link" asp-controller="Account" asp-action="Login">Login</a></li>
+                            <li class="nav-item">
+                                <a class="btn btn-primary btn-sm" asp-controller="Account" asp-action="RegisterStudent">Get Started</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- ── Main Content ── -->
+    <main role="main" class="container-fluid px-4 py-3" style="max-width:1280px; margin:0 auto;">
+        @RenderBody()
+    </main>
+
+    <!-- ── Footer ── -->
+    <footer class="site-footer">
+        <div class="container-fluid px-4 d-flex flex-wrap justify-content-between align-items-center" style="max-width:1280px;margin:0 auto;">
+            <span><i class="fas fa-graduation-cap me-1" style="color:var(--primary-light)"></i><strong style="color:white">MentoraX</strong> &nbsp;© @DateTime.Now.Year</span>
+            <span><a asp-controller="Home" asp-action="Privacy">Privacy</a> &nbsp;·&nbsp; <a href="#">Terms</a></span>
+        </div>
+    </footer>
+
+    <!-- ── Chat (unchanged logic) ── -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script src="~/js/chat.js"></script>
+    <script src="~/js/validations.js"></script>
+
+    @if (isLoggedIn && (userRole == "Student" || userRole == "Tutor"))
+    {
+        <button class="chat-float-btn" onclick="window.toggleChatPanel()" title="Messages">
+            <i class="fas fa-comment-dots fa-lg"></i>
+            <span id="unreadChatBadge" class="unread-badge">0</span>
+        </button>
+
+        <div id="chatWindow" class="chat-window">
+            <div class="chat-header">
+                <span id="chatWindowTitle"><i class="fas fa-comments me-2"></i>Messages</span>
+                <span class="close-btn" onclick="window.closeChat()" title="Close"><i class="fas fa-times"></i></span>
+            </div>
+            <div id="chatMessages" class="chat-messages">
+                <div class="empty-state"><i class="fas fa-comment-dots"></i><p>Select a conversation to start chatting</p></div>
+            </div>
+            <div id="typingIndicator" class="typing-indicator"></div>
+            <div class="chat-input-area">
+                <input type="text" id="chatInput" placeholder="Type a message…" onkeydown="window.onChatInputKeydown(event)" />
+                <button class="chat-send-btn" onclick="window.sendMessage()" title="Send">
+                    <i class="fas fa-paper-plane" style="font-size:15px"></i>
+                </button>
+            </div>
+        </div>
+    }
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var userId   = '@Context.Session.GetString("UserId")';
+            var userName = '@Context.Session.GetString("UserFullName")';
+            var role     = '@Context.Session.GetString("UserRole")';
+            if (userId && userId !== '') {
+                if (typeof window.initChat === 'function') {
+                    window.initChat(userId, userName, role);
+                } else {
+                    var t = 0;
+                    var retry = setInterval(function () {
+                        t++;
+                        if (typeof window.initChat === 'function') { clearInterval(retry); window.initChat(userId, userName, role); }
+                        else if (t > 20) clearInterval(retry);
+                    }, 100);
+                }
+            }
+        });
+    </script>
+
+    <!-- Toast JS (tiny, no dependencies) -->
+    <script>
+        window.MxToast = {
+            show: function(msg, type) {
+                type = type || 'info';
+                var icons = { success:'fas fa-check-circle', error:'fas fa-times-circle', warning:'fas fa-exclamation-triangle', info:'fas fa-info-circle' };
+                var t = document.createElement('div');
+                t.className = 'mx-toast ' + type;
+                t.innerHTML = '<i class="' + icons[type] + '"></i><span class="toast-msg">' + msg + '</span><button class="toast-close" onclick="this.parentElement.remove()">&times;</button>';
+                document.getElementById('toastContainer').appendChild(t);
+                setTimeout(function(){ t.classList.add('fade-out'); setTimeout(function(){ t.remove(); }, 300); }, 4500);
+            }
+        };
+        // Auto-show TempData toasts
+        @if (TempData["Success"] != null)
+        {
+            <text>window.MxToast.show('@TempData["Success"]', 'success');</text>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <text>window.MxToast.show('@TempData["Error"]',   'error');</text>
+        }
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
+

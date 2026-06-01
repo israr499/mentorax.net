@@ -1,0 +1,153 @@
+﻿@model MentoraXWebApp.Models.TutorRegisterViewModel
+
+@{
+    ViewData["Title"] = "Complete Tutor Profile";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4>Complete Your Tutor Profile</h4>
+                    <p>Fill in your professional details to become a verified tutor</p>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.Success != null)
+                    {
+                        <div class="alert alert-success">@ViewBag.Success</div>
+                    }
+                    @if (ViewBag.Error != null)
+                    {
+                        <div class="alert alert-danger">@ViewBag.Error</div>
+                    }
+
+                    <form asp-action="CompleteProfile" method="post">
+                        <h5>Professional Information</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Specialization" class="form-label">Specialization</label>
+                                <input asp-for="Specialization" class="form-control" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Qualification" class="form-label">Qualification</label>
+                                <input asp-for="Qualification" class="form-control" required />
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="ExperienceYears" class="form-label">Experience (Years)</label>
+                                <input asp-for="ExperienceYears" class="form-control" type="number" step="0.5" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="HourlyRate" class="form-label">Hourly Rate ($)</label>
+                                <input asp-for="HourlyRate" class="form-control" type="number" step="5" required />
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="EducationDetails" class="form-label">Education Details</label>
+                            <textarea asp-for="EducationDetails" class="form-control" rows="2"
+                                      placeholder="List your degrees, certificates, and educational background"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Bio" class="form-label">Bio / About You</label>
+                            <textarea asp-for="Bio" class="form-control" rows="3" required
+                                      placeholder="Tell students about yourself, your teaching philosophy, etc."></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="TeachingStyle" class="form-label">Teaching Style</label>
+                            <textarea asp-for="TeachingStyle" class="form-control" rows="2"
+                                      placeholder="Describe your teaching approach, methods, and techniques"></textarea>
+                        </div>
+
+                        <h5>Subjects You Teach</h5>
+                        <div id="subjectsContainer">
+                            <div class="subject-entry row mb-2">
+                                <div class="col-md-5"><input type="text" name="Subjects[0].SubjectName" class="form-control" placeholder="Subject Name" /></div>
+                                <div class="col-md-3"><input type="text" name="Subjects[0].GradeLevel" class="form-control" placeholder="Grade Level" /></div>
+                                <div class="col-md-3"><input type="number" name="Subjects[0].ExperienceInSubject" class="form-control" placeholder="Experience (years)" step="0.5" /></div>
+                                <div class="col-md-1"><button type="button" class="btn btn-danger remove-subject">-</button></div>
+                            </div>
+                        </div>
+                        <button type="button" id="addSubject" class="btn btn-sm btn-secondary mb-3">+ Add Subject</button>
+
+                        <h5>Availability Schedule</h5>
+                        <div id="availabilityContainer">
+                            <div class="availability-entry row mb-2">
+                                <div class="col-md-4">
+                                    <select name="Availability[0].DayOfWeek" class="form-select">
+                                        <option value="0">Sunday</option>
+                                        <option value="1">Monday</option>
+                                        <option value="2">Tuesday</option>
+                                        <option value="3">Wednesday</option>
+                                        <option value="4">Thursday</option>
+                                        <option value="5">Friday</option>
+                                        <option value="6">Saturday</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3"><input type="time" name="Availability[0].StartTime" class="form-control" /></div>
+                                <div class="col-md-3"><input type="time" name="Availability[0].EndTime" class="form-control" /></div>
+                                <div class="col-md-2"><button type="button" class="btn btn-danger remove-availability">-</button></div>
+                            </div>
+                        </div>
+                        <button type="button" id="addAvailability" class="btn btn-sm btn-secondary mb-3">+ Add Time Slot</button>
+
+                        <button type="submit" class="btn btn-primary w-100">Submit for Approval</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let subjectIndex = 1;
+    let availabilityIndex = 1;
+
+    document.getElementById('addSubject')?.addEventListener('click', function() {
+        const container = document.getElementById('subjectsContainer');
+        const newEntry = document.createElement('div');
+        newEntry.className = 'subject-entry row mb-2';
+        newEntry.innerHTML = `
+            <div class="col-md-5"><input type="text" name="Subjects[${subjectIndex}].SubjectName" class="form-control" placeholder="Subject Name" /></div>
+            <div class="col-md-3"><input type="text" name="Subjects[${subjectIndex}].GradeLevel" class="form-control" placeholder="Grade Level" /></div>
+            <div class="col-md-3"><input type="number" name="Subjects[${subjectIndex}].ExperienceInSubject" class="form-control" placeholder="Experience (years)" step="0.5" /></div>
+            <div class="col-md-1"><button type="button" class="btn btn-danger remove-subject">-</button></div>
+        `;
+        container.appendChild(newEntry);
+        subjectIndex++;
+    });
+
+    document.getElementById('addAvailability')?.addEventListener('click', function() {
+        const container = document.getElementById('availabilityContainer');
+        const newEntry = document.createElement('div');
+        newEntry.className = 'availability-entry row mb-2';
+        newEntry.innerHTML = `
+            <div class="col-md-4">
+                <select name="Availability[${availabilityIndex}].DayOfWeek" class="form-select">
+                    <option value="0">Sunday</option>
+                    <option value="1">Monday</option>
+                    <option value="2">Tuesday</option>
+                    <option value="3">Wednesday</option>
+                    <option value="4">Thursday</option>
+                    <option value="5">Friday</option>
+                    <option value="6">Saturday</option>
+                </select>
+            </div>
+            <div class="col-md-3"><input type="time" name="Availability[${availabilityIndex}].StartTime" class="form-control" /></div>
+            <div class="col-md-3"><input type="time" name="Availability[${availabilityIndex}].EndTime" class="form-control" /></div>
+            <div class="col-md-2"><button type="button" class="btn btn-danger remove-availability">-</button></div>
+        `;
+        container.appendChild(newEntry);
+        availabilityIndex++;
+    });
+
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-subject')) {
+            e.target.closest('.subject-entry').remove();
+        }
+        if (e.target.classList.contains('remove-availability')) {
+            e.target.closest('.availability-entry').remove();
+        }
+    });
+</script>

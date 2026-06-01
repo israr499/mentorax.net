@@ -1,0 +1,31 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "UserService\\UserService.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "TutorService\\TutorService.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "BookingService\\BookingService.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "APIGateway\\APIGateway.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "MentoraXWebApp\\MentoraXWebApp.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "ChatService\\ChatService.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

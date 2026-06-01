@@ -1,0 +1,61 @@
+﻿@* @model MentoraXWebApp.Models.TwoFactorSetupViewModel
+
+@{
+    ViewData["Title"] = "Enable Two-Factor Authentication";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4><i class="fas fa-shield-alt me-2"></i>Enable Two-Factor Authentication</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Scan the QR code below with Google Authenticator app on your phone.
+                    </div>
+
+                    <div class="text-center mb-4">
+                        <img src="@Model.QrCodeUrl" alt="QR Code" class="img-fluid border p-2" style="max-width: 250px;" />
+                    </div>
+
+                    <div class="alert alert-secondary">
+                        <strong>Manual Setup Key:</strong>
+                        <code id="manualKey">@Model.ManualEntryKey</code>
+                        <button class="btn btn-sm btn-outline-secondary ms-2" onclick="copyToClipboard()">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
+
+                    <hr />
+
+                    <form asp-action="EnableTwoFactor" method="post">
+                        <div class="mb-3">
+                            <label class="form-label">Enter 6-digit code from Google Authenticator</label>
+                            <input type="text" name="Code" class="form-control" placeholder="000000" maxlength="6" required />
+                        </div>
+                        @if (ViewBag.Error != null)
+                        {
+                            <div class="alert alert-danger">@ViewBag.Error</div>
+                        }
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-check me-2"></i>Verify and Enable
+                        </button>
+                        <a asp-action="Index" asp-controller="Home" class="btn btn-secondary">Cancel</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function copyToClipboard() {
+        var text = document.getElementById("manualKey").innerText;
+        navigator.clipboard.writeText(text);
+        alert("Manual key copied to clipboard!");
+    }
+</script> *@

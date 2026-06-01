@@ -1,0 +1,350 @@
+﻿/* ================================================================
+   MentoraX Chat — Premium UI Styles v2
+   ================================================================ */
+
+/* ── Floating Button ───────────────────────────────────────── */
+.chat-float-btn {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border: none;
+    box-shadow: 0 4px 20px rgba(102,126,234,.5);
+    cursor: pointer;
+    z-index: 1060;   /* FIX: was 1050 — must be above Bootstrap modals (1055) */
+    transition: transform .22s ease, box-shadow .22s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    outline: none;
+    /* FIX: prevent any ancestor overflow:hidden from clipping the button */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+}
+
+    .chat-float-btn:hover {
+        transform: scale(1.1) translateY(-2px);
+        box-shadow: 0 8px 28px rgba(102,126,234,.6);
+    }
+
+    .chat-float-btn:active {
+        transform: scale(.95);
+    }
+
+.unread-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: #ef4444;
+    color: #fff;
+    border-radius: 50%;
+    padding: 2px 5px;
+    font-size: 10px;
+    font-weight: 700;
+    display: none;
+    min-width: 18px;
+    text-align: center;
+    border: 2px solid #fff;
+    line-height: 1.4;
+}
+
+/* ── Chat Window ───────────────────────────────────────────── */
+.chat-window {
+    position: fixed;
+    bottom: 90px;
+    right: 16px;
+    width: 360px;
+    max-width: calc(100vw - 32px);
+    height: 500px;
+    max-height: calc(100vh - 110px);
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 16px 56px rgba(0,0,0,.2);
+    display: none;
+    flex-direction: column;
+    z-index: 1059;   /* FIX: was 1049 — just below the button */
+    overflow: hidden;
+    /* FIX: force compositing layer so it's never hidden by page content */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+}
+
+    .chat-window.open {
+        animation: chatSlideIn .22s cubic-bezier(.4,0,.2,1);
+    }
+
+@keyframes chatSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(18px) scale(.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* ── Header ────────────────────────────────────────────────── */
+.chat-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    padding: 13px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    min-height: 52px;
+}
+
+    .chat-header .chat-title {
+        font-weight: 600;
+        font-size: 13.5px;
+        flex: 1;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .chat-header .close-btn {
+        cursor: pointer;
+        background: rgba(255,255,255,.18);
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        min-width: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background .16s;
+        flex-shrink: 0;
+        margin-left: 8px;
+        position: relative;
+        z-index: 2;
+    }
+
+        .chat-header .close-btn:hover {
+            background: rgba(255,255,255,.32);
+        }
+
+/* ── Messages Area ─────────────────────────────────────────── */
+.chat-messages {
+    flex: 1;
+    padding: 12px 10px;
+    overflow-y: auto;
+    background: #f4f6fb;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+    .chat-messages::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .chat-messages::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb {
+        background: #c4b5fd;
+        border-radius: 4px;
+    }
+
+/* ── Message Bubbles ───────────────────────────────────────── */
+.message-sent,
+.message-received {
+    display: flex;
+    margin-bottom: 4px;
+    animation: msgPop .17s ease;
+}
+
+@keyframes msgPop {
+    from {
+        opacity: 0;
+        transform: translateY(6px)
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0)
+    }
+}
+
+.message-sent {
+    justify-content: flex-end;
+}
+
+.message-received {
+    justify-content: flex-start;
+}
+
+.message-bubble {
+    max-width: 76%;
+    padding: 8px 13px 6px;
+    border-radius: 16px;
+    line-height: 1.45;
+    word-break: break-word;
+}
+
+.message-sent .message-bubble {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border-bottom-right-radius: 4px;
+}
+
+.message-received .message-bubble {
+    background: #fff;
+    color: #1f2937;
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.09);
+}
+
+.message-bubble p {
+    margin: 0;
+    font-size: 13.5px;
+}
+
+.message-bubble small {
+    display: block;
+    font-size: 10px;
+    opacity: .6;
+    margin-top: 3px;
+}
+
+.message-sent .message-bubble small {
+    text-align: right;
+}
+
+.message-bubble .fw-semibold {
+    font-size: 11px;
+    opacity: .75;
+    margin-bottom: 2px;
+    display: block;
+}
+
+/* ── Typing Indicator ──────────────────────────────────────── */
+.typing-indicator {
+    padding: 4px 12px 6px;
+    font-size: 11.5px;
+    color: #6b7280;
+    font-style: italic;
+    flex-shrink: 0;
+    background: #f4f6fb;
+    border-top: 1px solid #e9ecef;
+    display: none;
+}
+
+/* ── Input Area ────────────────────────────────────────────── */
+.chat-input-area {
+    padding: 10px 10px;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    flex-shrink: 0;
+}
+
+    .chat-input-area input[type="text"] {
+        flex: 1;
+        padding: 9px 14px;
+        border: 1.5px solid #e5e7eb;
+        border-radius: 22px;
+        outline: none;
+        font-size: 13.5px;
+        transition: border-color .18s, box-shadow .18s;
+        background: #f9fafb;
+    }
+
+        .chat-input-area input[type="text"]:focus {
+            border-color: #764ba2;
+            box-shadow: 0 0 0 3px rgba(118,75,162,.12);
+            background: #fff;
+        }
+
+.chat-send-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform .16s, box-shadow .16s;
+    box-shadow: 0 2px 8px rgba(102,126,234,.38);
+}
+
+    .chat-send-btn:hover {
+        transform: scale(1.12);
+        box-shadow: 0 4px 14px rgba(102,126,234,.5);
+    }
+
+    .chat-send-btn:active {
+        transform: scale(.95);
+    }
+
+/* ── Room items ─────────────────────────────────────────────── */
+.chat-room-item {
+    cursor: pointer;
+    padding: 11px 13px;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background .15s;
+}
+
+    .chat-room-item:hover {
+        background: #f5f3ff;
+    }
+
+    .chat-room-item:last-child {
+        border-bottom: none;
+    }
+
+/* ── Empty / Loading states ──────────────────────────────── */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 16px;
+    color: #9ca3af;
+    margin: auto;
+    text-align: center;
+    flex: 1;
+}
+
+    .empty-state i {
+        font-size: 38px;
+        margin-bottom: 10px;
+        opacity: .4;
+    }
+
+    .empty-state p {
+        margin: 0;
+        font-size: 12.5px;
+        line-height: 1.5;
+    }
+
+.loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    color: #9ca3af;
+    margin: auto;
+    flex: 1;
+}
+
+    .loading-state p {
+        font-size: 12px;
+        margin-top: 8px;
+    }

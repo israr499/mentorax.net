@@ -1,0 +1,282 @@
+﻿@model AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Admin Dashboard</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <span class="text-muted">Welcome, Admin</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Students
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalStudents</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Total Tutors
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalTutors</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-chalkboard-teacher fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Total Bookings
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalBookings</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar-check fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Total Revenue
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">$@Model.TotalRevenue.ToString("N2")</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Tutors Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Pending Tutor Approvals</h6>
+                    <a href="@Url.Action("AllUsers")" class="btn btn-sm btn-primary">View All Users</a>
+                </div>
+                <div class="card-body">
+                    @if (Model.PendingTutors != null && Model.PendingTutors.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="pendingTutorsTable" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Specialization</th>
+                                        <th>Experience</th>
+                                        <th>Hourly Rate</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var tutor in Model.PendingTutors)
+                                    {
+                                        <tr>
+                                            <td>@tutor.FullName</td>
+                                            <td>@tutor.Email</td>
+                                            <td>@tutor.Specialization</td>
+                                            <td>@tutor.ExperienceYears years</td>
+                                            <td>$@tutor.HourlyRate</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-success approve-tutor"
+                                                        data-tutor-id="@tutor.TutorID"
+                                                        data-tutor-name="@tutor.FullName">
+                                                    <i class="fas fa-check"></i> Approve
+                                                </button>
+                                                <button class="btn btn-sm btn-danger reject-tutor"
+                                                        data-tutor-id="@tutor.TutorID"
+                                                        data-tutor-name="@tutor.FullName">
+                                                    <i class="fas fa-times"></i> Reject
+                                                </button>
+                                                <a href="@Url.Action("TutorDetails", new { id = tutor.TutorID })"
+                                                   class="btn btn-sm btn-info">
+                                                    <i class="fas fa-eye"></i> Details
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">No pending tutor approvals.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Bookings Section -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Bookings</h6>
+                    <a href="@Url.Action("AllBookings")" class="btn btn-sm btn-primary">View All Bookings</a>
+                </div>
+                <div class="card-body">
+                    @if (Model.RecentBookings != null && Model.RecentBookings.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-bordered" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>Booking ID</th>
+                                        <th>Student</th>
+                                        <th>Tutor</th>
+                                        <th>Date</th>
+                                        <th>Duration</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var booking in Model.RecentBookings.Take(5))
+                                    {
+                                        <tr>
+                                            <td>@booking.BookingID</td>
+                                            <td>@booking.StudentName</td>
+                                            <td>@booking.TutorName</td>
+                                            <td>@booking.BookingDate.ToString("MMM dd, yyyy")</td>
+                                            <td>@booking.DurationHours hrs</td>
+                                            <td>$@booking.TotalAmount</td>
+                                            <td>
+                                                <span class="badge bg-@(booking.Status == "Confirmed" ? "success" :
+                                                                                                                    booking.Status == "Pending" ? "warning" :
+                                                                                                                    booking.Status == "Completed" ? "info" : "danger")">
+                                            @booking.Status
+                                        </span>
+                                    </td>
+                                </tr>
+                                                                }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">No bookings found.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Approve/Reject Modals -->
+<div class="modal fade" id="approveModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Approve Tutor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to approve <strong id="approveTutorName"></strong>?</p>
+            </div>
+            <div class="modal-footer">
+                <form method="post" asp-action="ApproveTutor">
+                    <input type="hidden" name="tutorId" id="approveTutorId" />
+                    <input type="hidden" name="isApproved" value="true" />
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Approve</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Reject Tutor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" asp-action="ApproveTutor">
+                <div class="modal-body">
+                    <p>Are you sure you want to reject <strong id="rejectTutorName"></strong>?</p>
+                    <div class="form-group">
+                        <label for="rejectionReason">Rejection Reason:</label>
+                        <textarea name="rejectionReason" class="form-control" rows="3"
+                                  placeholder="Please provide a reason for rejection..."></textarea>
+                    </div>
+                    <input type="hidden" name="tutorId" id="rejectTutorId" />
+                    <input type="hidden" name="isApproved" value="false" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Reject</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('.approve-tutor').click(function() {
+                var tutorId = $(this).data('tutor-id');
+                var tutorName = $(this).data('tutor-name');
+                $('#approveTutorId').val(tutorId);
+                $('#approveTutorName').text(tutorName);
+                $('#approveModal').modal('show');
+            });
+
+            $('.reject-tutor').click(function() {
+                var tutorId = $(this).data('tutor-id');
+                var tutorName = $(this).data('tutor-name');
+                $('#rejectTutorId').val(tutorId);
+                $('#rejectTutorName').text(tutorName);
+                $('#rejectModal').modal('show');
+            });
+        });
+    </script>
+}

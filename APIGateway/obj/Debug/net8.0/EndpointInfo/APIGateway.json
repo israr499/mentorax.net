@@ -1,0 +1,1198 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "APIGateway",
+    "version": "1.0"
+  },
+  "paths": {
+    "/configuration": {
+      "get": {
+        "tags": [
+          "FileConfiguration"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "FileConfiguration"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/FileConfiguration"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FileConfiguration"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FileConfiguration"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/FileConfiguration"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/outputcache/{region}": {
+      "delete": {
+        "tags": [
+          "OutputCache"
+        ],
+        "parameters": [
+          {
+            "name": "region",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/WeatherForecast": {
+      "get": {
+        "tags": [
+          "WeatherForecast"
+        ],
+        "operationId": "GetWeatherForecast",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WeatherForecast"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WeatherForecast"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WeatherForecast"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AggregateRouteConfig": {
+        "type": "object",
+        "properties": {
+          "routeKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "parameter": {
+            "type": "string",
+            "nullable": true
+          },
+          "jsonPath": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "FileAggregateRoute": {
+        "type": "object",
+        "properties": {
+          "aggregator": {
+            "type": "string",
+            "nullable": true
+          },
+          "priority": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "routeIsCaseSensitive": {
+            "type": "boolean"
+          },
+          "routeKeys": {
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "routeKeysConfig": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AggregateRouteConfig"
+            },
+            "nullable": true
+          },
+          "upstreamHeaderTemplates": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "upstreamHost": {
+            "type": "string",
+            "nullable": true
+          },
+          "upstreamHttpMethod": {
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "upstreamPathTemplate": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "FileAuthenticationOptions": {
+        "type": "object",
+        "properties": {
+          "allowedScopes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "allowAnonymous": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "authenticationProviderKey": {
+            "type": "string",
+            "nullable": true,
+            "deprecated": true
+          },
+          "authenticationProviderKeys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "hasScheme": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "hasScope": {
+            "type": "boolean",
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "FileCacheOptions": {
+        "type": "object",
+        "properties": {
+          "ttlSeconds": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "region": {
+            "type": "string",
+            "nullable": true
+          },
+          "header": {
+            "type": "string",
+            "nullable": true
+          },
+          "enableContentHashing": {
+            "type": "boolean",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "FileConfiguration": {
+        "type": "object",
+        "properties": {
+          "routes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FileRoute"
+            },
+            "nullable": true
+          },
+          "dynamicRoutes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FileDynamicRoute"
+            },
+            "nullable": true
+          },
+          "aggregates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FileAggregateRoute"
+            },
+            "nullable": true
+          },
+          "globalConfiguration": {
+            "$ref": "#/components/schemas/FileGlobalConfiguration"
+          }
+        },
+        "additionalProperties": false
+      },
+      "FileDynamicRoute": {
+        "type": "object",
+        "properties": {
+          "authenticationOptions": {
+            "$ref": "#/components/schemas/FileAuthenticationOptions"
+          },
+          "cacheOptions": {
+            "$ref": "#/components/schemas/FileCacheOptions"
+          },
+          "downstreamHttpVersionPolicy": {
+            "type": "string",
+            "nullable": true
+          },
+          "downstreamHttpVersion": {
+            "type": "string",
+            "nullable": true
+          },
+          "downstreamScheme": {
+            "type": "string",
+            "nullable": true
+          },
+          "httpHandlerOptions": {
+            "$ref": "#/components/schemas/FileHttpHandlerOptions"
+          },
+          "key": {
+            "type": "string",
+            "nullable": true
+          },
+          "loadBalancerOptions": {
+            "$ref": "#/components/schemas/FileLoadBalancerOptions"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "qoSOptions": {
+            "$ref": "#/components/schemas/FileQoSOptions"
+          },
+          "rateLimitOptions": {
+            "$ref": "#/components/schemas/FileRateLimitByHeaderRule"
+          },
+          "serviceName": {
+            "type": "string",
+            "nullable": true
+          },
+          "serviceNamespace": {
+            "type": "string",
+            "nullable": true
+          },
+          "timeout": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "rateLimitRule": {
+            "$ref": "#/components/schemas/FileRateLimitByHeaderRule"
+          }
+        },
+        "additionalProperties": false
+      },
+      "FileGlobalAuthenticationOptions": {
+        "type": "object",
+        "properties": {
+          "allowedScopes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "allowAnonymous": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "authenticationProviderKey": {
+            "type": "string",
+            "nullable": true,
+            "deprecated": true
+          },
+          "authenticationProviderKeys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "hasScheme": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "hasScope": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "routeKeys": {
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "FileGlobalCacheOptions": {
+        "type": "object",
+        "properties": {
+          "ttlSeconds": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "region": {
+            "type": "string",
+            "nullable": true
+          },
+          "header": {
+            "type": "string",
+            "nullable": true
+          },
+          "enableContentHashing": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "routeKeys": {
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "FileGlobalConfiguration": {
+        "type": "object",
+        "properties": {
+          "authenticationOptions": {
+            "$ref": "#/components/schemas/FileGlobalAuthenticationOptions"
+          },
+          "baseUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "cacheOptions": {
+            "$ref": "#/components/schemas/FileGlobalCacheOptions"
+          },
+          "downstreamHeaderTransform": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "downstreamHttpVersion": {
+            "type": "string",
+            "nullable": true
+          },
+          "downstreamHttpVersionPolicy": {
+            "type": "string",
+            "nullable": true
+          },
+          "downstreamScheme": {
+            "type": "string",
+            "nullable": true
+          },
+          "httpHandlerOptions": {
+            "$ref": "#/components/schemas/FileGlobalHttpHandlerOptions"
+          },
+          "loadBalancerOptions": {
+            "$ref": "#/components/schemas/FileGlobalLoadBalancerOptions"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "metadataOptions": {
+            "$ref": "#/components/schemas/FileMetadataOptions"
+          },
+          "qoSOptions": {
+            "$ref": "#/components/schemas/FileGlobalQoSOptions"
+          },
+          "rateLimitOptions": {
+            "$ref": "#/components/schemas/FileGlobalRateLimitByHeaderRule"
+          },
+          "requestIdKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "securityOptions": {
+            "$ref": "#/components/schemas/FileSecurityOptions"
+          },
+          "serviceDiscoveryProvider": {
+            "$ref": "#/components/schemas/FileServiceDiscoveryProvider"
+          },
+          "timeout": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "upstreamHeaderTransform": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "FileGlobalHttpHandlerOptions": {
+        "type": "object",
+        "properties": {
+          "allowAutoRedirect": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "maxConnectionsPerServer": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "pooledConnectionLifetimeSeconds": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "useCookieContainer": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "useProxy": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "useTracing": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "routeKeys": {
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "FileGlobalLoadBalancerOptions": {
+        "type": "object",
+        "properties": {
+          "expiry": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "key": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "routeKeys": {
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "FileGlobalQoSOptions": {
+        "type": "object",
+        "properties": {
+          "durationOfBreak": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true,
+            "deprecated": true
+          },
+          "breakDuration": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "exceptionsAllowedBeforeBreaking": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true,
+            "deprecated": true
+          },
+          "minimumThroughput": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "failureRatio": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "samplingDuration": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "timeoutValue": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true,
+            "deprecated": true
+          },
+          "timeout": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "routeKeys": {
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "FileGlobalRateLimitByHeaderRule": {
+        "type": "object",
+        "properties": {
+          "enableRateLimiting": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "enableHeaders": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "period": {
+            "type": "string",
+            "nullable": true
+          },
+          "periodTimespan": {
+            "type": "number",
+            "format": "double",
+            "nullable": true,
+            "deprecated": true
+          },
+          "wait": {
+            "type": "string",
+            "nullable": true
+          },
+          "statusCode": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "quotaMessage": {
+            "type": "string",
+            "nullable": true
+          },
+          "keyPrefix": {
+            "type": "string",
+            "nullable": true
+          },
+          "clientIdHeader": {
+            "type": "string",
+            "nullable": true
+          },
+          "clientWhitelist": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "disableRateLimitHeaders": {
+            "type": "boolean",
+            "nullable": true,
+            "deprecated": true
+          },
+          "httpStatusCode": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true,
+            "deprecated": true
+          },
+          "quotaExceededMessage": {
+            "type": "string",
+            "nullable": true,
+            "deprecated": true
+          },
+          "rateLimitCounterPrefix": {
+            "type": "string",
+            "nullable": true,
+            "deprecated": true
+          },
+          "routeKeys": {
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "FileHostAndPort": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "string",
+            "nullable": true
+          },
+          "port": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "FileHttpHandlerOptions": {
+        "type": "object",
+        "properties": {
+          "allowAutoRedirect": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "maxConnectionsPerServer": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "pooledConnectionLifetimeSeconds": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "useCookieContainer": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "useProxy": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "useTracing": {
+            "type": "boolean",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "FileLoadBalancerOptions": {
+        "type": "object",
+        "properties": {
+          "expiry": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "key": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "FileMetadataOptions": {
+        "type": "object",
+        "properties": {
+          "currentCulture": {
+            "type": "string",
+            "nullable": true
+          },
+          "numberStyle": {
+            "type": "string",
+            "nullable": true
+          },
+          "separators": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "stringSplitOption": {
+            "type": "string",
+            "nullable": true
+          },
+          "trimChars": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "FileQoSOptions": {
+        "type": "object",
+        "properties": {
+          "durationOfBreak": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true,
+            "deprecated": true
+          },
+          "breakDuration": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "exceptionsAllowedBeforeBreaking": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true,
+            "deprecated": true
+          },
+          "minimumThroughput": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "failureRatio": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "samplingDuration": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "timeoutValue": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true,
+            "deprecated": true
+          },
+          "timeout": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "FileRateLimitByHeaderRule": {
+        "type": "object",
+        "properties": {
+          "enableRateLimiting": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "enableHeaders": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "period": {
+            "type": "string",
+            "nullable": true
+          },
+          "periodTimespan": {
+            "type": "number",
+            "format": "double",
+            "nullable": true,
+            "deprecated": true
+          },
+          "wait": {
+            "type": "string",
+            "nullable": true
+          },
+          "statusCode": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "quotaMessage": {
+            "type": "string",
+            "nullable": true
+          },
+          "keyPrefix": {
+            "type": "string",
+            "nullable": true
+          },
+          "clientIdHeader": {
+            "type": "string",
+            "nullable": true
+          },
+          "clientWhitelist": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "disableRateLimitHeaders": {
+            "type": "boolean",
+            "nullable": true,
+            "deprecated": true
+          },
+          "httpStatusCode": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true,
+            "deprecated": true
+          },
+          "quotaExceededMessage": {
+            "type": "string",
+            "nullable": true,
+            "deprecated": true
+          },
+          "rateLimitCounterPrefix": {
+            "type": "string",
+            "nullable": true,
+            "deprecated": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "FileRoute": {
+        "type": "object",
+        "properties": {
+          "authenticationOptions": {
+            "$ref": "#/components/schemas/FileAuthenticationOptions"
+          },
+          "cacheOptions": {
+            "$ref": "#/components/schemas/FileCacheOptions"
+          },
+          "downstreamHttpVersionPolicy": {
+            "type": "string",
+            "nullable": true
+          },
+          "downstreamHttpVersion": {
+            "type": "string",
+            "nullable": true
+          },
+          "downstreamScheme": {
+            "type": "string",
+            "nullable": true
+          },
+          "httpHandlerOptions": {
+            "$ref": "#/components/schemas/FileHttpHandlerOptions"
+          },
+          "key": {
+            "type": "string",
+            "nullable": true
+          },
+          "loadBalancerOptions": {
+            "$ref": "#/components/schemas/FileLoadBalancerOptions"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "qoSOptions": {
+            "$ref": "#/components/schemas/FileQoSOptions"
+          },
+          "rateLimitOptions": {
+            "$ref": "#/components/schemas/FileRateLimitByHeaderRule"
+          },
+          "serviceName": {
+            "type": "string",
+            "nullable": true
+          },
+          "serviceNamespace": {
+            "type": "string",
+            "nullable": true
+          },
+          "timeout": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "addClaimsToRequest": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "nullable": true
+            },
+            "nullable": true
+          },
+          "addHeadersToRequest": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "nullable": true
+            },
+            "nullable": true
+          },
+          "addQueriesToRequest": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "nullable": true
+            },
+            "nullable": true
+          },
+          "changeDownstreamPathTemplate": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "nullable": true
+            },
+            "nullable": true
+          },
+          "dangerousAcceptAnyServerCertificateValidator": {
+            "type": "boolean"
+          },
+          "delegatingHandlers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "downstreamHeaderTransform": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "downstreamHostAndPorts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FileHostAndPort"
+            },
+            "nullable": true
+          },
+          "downstreamHttpMethod": {
+            "type": "string",
+            "nullable": true
+          },
+          "downstreamPathTemplate": {
+            "type": "string",
+            "nullable": true
+          },
+          "fileCacheOptions": {
+            "$ref": "#/components/schemas/FileCacheOptions"
+          },
+          "priority": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "requestIdKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "routeClaimsRequirement": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "nullable": true
+            },
+            "nullable": true
+          },
+          "routeIsCaseSensitive": {
+            "type": "boolean"
+          },
+          "securityOptions": {
+            "$ref": "#/components/schemas/FileSecurityOptions"
+          },
+          "upstreamHeaderTemplates": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "upstreamHeaderTransform": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "upstreamHost": {
+            "type": "string",
+            "nullable": true
+          },
+          "upstreamHttpMethod": {
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "upstreamPathTemplate": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "FileSecurityOptions": {
+        "type": "object",
+        "properties": {
+          "ipAllowedList": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "ipBlockedList": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "excludeAllowedFromBlocked": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "FileServiceDiscoveryProvider": {
+        "type": "object",
+        "properties": {
+          "scheme": {
+            "type": "string",
+            "nullable": true
+          },
+          "host": {
+            "type": "string",
+            "nullable": true
+          },
+          "port": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "token": {
+            "type": "string",
+            "nullable": true
+          },
+          "configurationKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "pollingInterval": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "namespace": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "WeatherForecast": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "temperatureC": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "temperatureF": {
+            "type": "integer",
+            "format": "int32",
+            "readOnly": true
+          },
+          "summary": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

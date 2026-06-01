@@ -1,0 +1,401 @@
+﻿@using MentoraXWebApp.Helpers
+@model MentoraXWebApp.Models.TutorProfile
+@{
+    ViewData["Title"] = $"{Model?.FullName ?? "Tutor"} - Profile";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var availableSlots = ViewBag.AvailableSlots as List<MentoraXWebApp.Models.TimeSlot>;
+    var reviews = ViewBag.Reviews as List<MentoraXWebApp.Models.ReviewRequest>;
+    var avgRating = reviews != null && reviews.Any() ? reviews.Average(r => r.Rating) : 0.0;
+}
+
+<style>
+    .profile-hero {
+        background: linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+        color: #fff;
+        border-radius: 20px;
+        padding: 32px;
+        margin-bottom: 24px;
+    }
+
+    .profile-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.25);
+        font-size: 32px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 3px solid rgba(255,255,255,.6);
+    }
+
+    .subject-pill {
+        background: #f0eeff;
+        color: #764ba2;
+        border-radius: 50px;
+        padding: 5px 14px;
+        font-size: 12.5px;
+        font-weight: 600;
+    }
+
+    .slot-btn {
+        border: 1.5px solid #d1d5db;
+        border-radius: 10px;
+        padding: 10px 8px;
+        text-align: center;
+        cursor: pointer;
+        transition: all .18s;
+        text-decoration: none;
+        display: block;
+        color: #374151;
+    }
+
+        .slot-btn:hover, .slot-btn:focus {
+            border-color: #764ba2;
+            background: #f5f3ff;
+            color: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(118,75,162,.18);
+        }
+
+    .review-card {
+        border-left: 3px solid #fbbf24;
+        padding: 12px 16px;
+        background: #fffbeb;
+        border-radius: 0 10px 10px 0;
+        margin-bottom: 12px;
+    }
+
+    .msg-btn {
+        background: linear-gradient(135deg,#667eea,#764ba2);
+        border: none;
+        color: #fff;
+        padding: 10px 20px;
+        border-radius: 50px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all .2s;
+        width: 100%;
+    }
+
+        .msg-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(102,126,234,.45);
+        }
+
+        .msg-btn:disabled {
+            opacity: .65;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+    .book-btn {
+        background: linear-gradient(135deg,#22c55e,#16a34a);
+        border: none;
+        color: #fff;
+        padding: 10px 20px;
+        border-radius: 50px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all .2s;
+        width: 100%;
+        text-align: center;
+        display: block;
+        text-decoration: none;
+    }
+
+        .book-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(34,197,94,.4);
+            color: #fff;
+        }
+
+    .stat-box {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 12px;
+        text-align: center;
+    }
+</style>
+
+@if (!string.IsNullOrEmpty(Model?.IntroVideoUrl))
+{
+    <div class="card border-0 shadow-sm mb-4" style="border-radius:16px;overflow:hidden">
+        <div class="card-header text-white fw-semibold" style="background:linear-gradient(135deg,#ef4444,#dc2626)">
+            <i class="fas fa-video me-2"></i>Watch Intro Video
+        </div>
+        <div class="card-body p-0">
+            <div class="ratio ratio-16x9">
+                <iframe src="@VideoHelper.GetEmbedUrl(Model.IntroVideoUrl)" title="Intro Video" allowfullscreen></iframe>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="row g-4">
+    <!-- Left Sidebar -->
+    <div class="col-lg-4">
+
+        <!-- Profile Hero Card -->
+        <div class="profile-hero shadow-sm mb-3">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="profile-avatar">@(Model?.FullName?.Length > 0 ? Model.FullName[0].ToString().ToUpper() : "T")</div>
+                <div>
+                    <h4 class="fw-bold mb-0">@Model?.FullName</h4>
+                    <small class="opacity-75">@Model?.Specialization</small>
+                </div>
+            </div>
+            @if (avgRating > 0)
+            {
+                <div class="mb-2">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        <i class="@(i <= Math.Round(avgRating) ? "fas" : "far") fa-star" style="color:#fbbf24;font-size:14px"></i>
+                    }
+                    <span class="ms-1 small opacity-90">@avgRating.ToString("F1") (@reviews?.Count reviews)</span>
+                </div>
+            }
+            <p class="mb-0 small opacity-85">@Model?.Bio</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="row g-2 mb-3">
+            <div class="col-4">
+                <div class="stat-box">
+                    <div class="fw-bold text-primary">@Model?.ExperienceYears</div>
+                    <div class="text-muted" style="font-size:11px">Years Exp</div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="stat-box">
+                    <div class="fw-bold text-success">$@Model?.HourlyRate</div>
+                    <div class="text-muted" style="font-size:11px">Per Hour</div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="stat-box">
+                    <div class="fw-bold text-warning">@(reviews?.Count ?? 0)</div>
+                    <div class="text-muted" style="font-size:11px">Reviews</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info -->
+        <div class="card border-0 shadow-sm mb-3" style="border-radius:14px">
+            <div class="card-body">
+                <div class="d-flex gap-2 mb-2 align-items-center">
+                    <i class="fas fa-graduation-cap text-primary" style="width:18px"></i>
+                    <span class="small"><strong>Qualification:</strong> @Model?.Qualification</span>
+                </div>
+                <div class="d-flex gap-2 align-items-center">
+                    <i class="fas fa-briefcase text-primary" style="width:18px"></i>
+                    <span class="small"><strong>Experience:</strong> @Model?.ExperienceYears years</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        @if (Context.Session.GetString("UserRole") == "Student")
+        {
+            <div class="card border-0 shadow-sm" style="border-radius:14px">
+                <div class="card-body d-grid gap-2">
+                    <!--
+                        FIX: Button now has id="messageTutorBtn" with data attributes.
+                        The click handler is wired in the Scripts section below.
+                        data-tutorid stores the TutorID (not UserID) so the chat
+                        API gets the correct identifier.
+                    -->
+                    <button class="msg-btn"
+                            id="messageTutorBtn"
+                            data-tutorid="@Model?.TutorID"
+                            data-tutorname="@Model?.FullName">
+                        <i class="fas fa-comment-dots me-2"></i>Message @(Model?.FullName?.Split(' ')[0] ?? "Tutor")
+                    </button>
+                    <a href="/Student/BookSession?tutorId=@Model?.TutorID" class="book-btn">
+                        <i class="fas fa-calendar-check me-2"></i>Book a Session
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Right Content -->
+    <div class="col-lg-8">
+
+        <!-- Subjects -->
+        <div class="card border-0 shadow-sm mb-4" style="border-radius:16px">
+            <div class="card-header fw-semibold text-white" style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:16px 16px 0 0">
+                <i class="fas fa-book me-2"></i>Subjects Taught
+            </div>
+            <div class="card-body">
+                @if (Model?.Subjects != null && Model.Subjects.Any())
+                {
+                    <div class="d-flex flex-wrap gap-2">
+                        @foreach (var s in Model.Subjects)
+                        {
+                            <span class="subject-pill">
+                                <i class="fas fa-bookmark me-1 opacity-60"></i>@s.SubjectName
+                                @if (!string.IsNullOrEmpty(s.GradeLevel))
+                                {
+                                    <span class="opacity-70 ms-1">· @s.GradeLevel</span>
+                                }
+                            </span>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">No subjects listed yet.</p>
+                }
+            </div>
+        </div>
+
+        <!-- Weekly Schedule -->
+        <div class="card border-0 shadow-sm mb-4" style="border-radius:16px">
+            <div class="card-header bg-success text-white fw-semibold" style="border-radius:16px 16px 0 0">
+                <i class="fas fa-clock me-2"></i>Weekly Availability
+            </div>
+            <div class="card-body p-0">
+                @if (Model?.Availability != null && Model.Availability.Any())
+                {
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr><th class="ps-3">Day</th><th>Time Window</th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var a in Model.Availability)
+                            {
+                                <tr>
+                                    <td class="ps-3 fw-semibold"><i class="fas fa-calendar-day text-success me-2 opacity-60"></i>@a.DayName</td>
+                                    <td>@a.StartTime.ToString(@"hh\:mm") – @a.EndTime.ToString(@"hh\:mm")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <div class="p-3 text-muted">No availability set.</div>
+                }
+            </div>
+        </div>
+
+        <!-- Time Slots -->
+        <div class="card border-0 shadow-sm mb-4" style="border-radius:16px">
+            <div class="card-header bg-info text-white fw-semibold" style="border-radius:16px 16px 0 0">
+                <i class="fas fa-calendar-alt me-2"></i>Available Time Slots
+            </div>
+            <div class="card-body">
+                @if (availableSlots != null && availableSlots.Any())
+                {
+                    <div class="row g-2">
+                        @foreach (var slot in availableSlots)
+                        {
+                            <div class="col-6 col-sm-4 col-md-3">
+                                <a href="/Student/BookSession?tutorId=@Model?.TutorID&slotId=@slot.SlotID&slotDate=@slot.SlotDate.ToString("yyyy-MM-dd HH:mm")"
+                                   class="slot-btn">
+                                    <div class="fw-bold" style="font-size:13px">@slot.SlotDate.ToString("MMM dd")</div>
+                                    <div class="text-muted" style="font-size:11px">@slot.StartTime.ToString(@"hh\:mm")</div>
+                                </a>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-warning mb-0 rounded-3">
+                        <i class="fas fa-info-circle me-2"></i>No available slots right now. Check back later.
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Reviews -->
+        <div class="card border-0 shadow-sm" style="border-radius:16px">
+            <div class="card-header fw-semibold" style="background:#fef9c3;border-radius:16px 16px 0 0">
+                <i class="fas fa-star text-warning me-2"></i>Student Reviews
+                @if (reviews != null && reviews.Any())
+                {
+                    <span class="badge bg-warning text-dark ms-2">@reviews.Count</span>
+                }
+            </div>
+            <div class="card-body">
+                @if (reviews != null && reviews.Any())
+                {
+                    @foreach (var r in reviews)
+                    {
+                        <div class="review-card">
+                            <div class="mb-1">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    <i class="@(i <= r.Rating ? "fas" : "far") fa-star text-warning" style="font-size:13px"></i>
+                                }
+                                <span class="ms-1 text-muted small">@r.Rating / 5</span>
+                            </div>
+                            <p class="mb-1 small">@r.Comment</p>
+                            <small class="text-muted">— Verified Student</small>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="text-center text-muted py-3">
+                        <i class="fas fa-star fa-2x mb-2 opacity-30"></i>
+                        <p class="mb-0">No reviews yet. Be the first to review!</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            // ── FIX: Wire up the "Message Tutor" button ───────────────────
+            //
+            // Root cause: The button had NO click handler attached anywhere,
+            // so clicking it did absolutely nothing.
+            //
+            // Fix: Attach an event listener here that reads the TutorID from
+            // the button's data-tutorid attribute and calls startChatWithTutor.
+            //
+            // startChatWithTutor is defined in chat.js and exposed on window.
+            // It calls https://mentorax-chat-gabwajbratc0d0f4.southeastasia-01.azurewebsites.net/api/Chat/GetOrCreateRoom to create
+            // or retrieve the chat room, then opens the chat panel.
+
+            var btn = document.getElementById('messageTutorBtn');
+            if (btn) {
+                btn.addEventListener('click', function () {
+                    var tutorId   = btn.getAttribute('data-tutorid');
+                    var tutorName = btn.getAttribute('data-tutorname');
+
+                    console.log('[TutorDetails] Message Tutor clicked. tutorId=' + tutorId);
+
+                    if (!tutorId || tutorId === '' || tutorId === 'undefined') {
+                        alert('Tutor ID is missing. Cannot open chat.');
+                        return;
+                    }
+
+                    if (typeof window.startChatWithTutor === 'function') {
+                        btn.disabled = true;
+                        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Opening chat…';
+                        window.startChatWithTutor(tutorId, tutorName || 'Tutor');
+                        // Re-enable after a short delay in case of error
+                        setTimeout(function () {
+                            btn.disabled = false;
+                            btn.innerHTML = '<i class="fas fa-comment-dots me-2"></i>Message ' + (tutorName || 'Tutor').split(' ')[0];
+                        }, 3000);
+                    } else {
+                        console.error('[TutorDetails] window.startChatWithTutor not found — is chat.js loaded?');
+                        alert('Chat is not available. Please refresh the page.');
+                    }
+                });
+            }
+
+        });
+    </script>
+}

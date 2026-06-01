@@ -1,0 +1,48 @@
+﻿@* @model MentoraXWebApp.Models.TwoFactorVerifyViewModel
+
+@{
+    ViewData["Title"] = "Two-Factor Authentication";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4><i class="fas fa-shield-alt me-2"></i>Two-Factor Authentication</h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">
+                        Please enter the 6-digit code from your Google Authenticator app.
+                    </p>
+
+                    <form asp-action="VerifyTwoFactor" method="post">
+                        <input type="hidden" asp-for="ReturnUrl" />
+
+                        <div class="mb-3">
+                            <label asp-for="Code" class="form-label">Verification Code</label>
+                            <input asp-for="Code" class="form-control" placeholder="000000" maxlength="6" autocomplete="off" autofocus />
+                            <span asp-validation-for="Code" class="text-danger"></span>
+                        </div>
+
+                        @if (ViewBag.Error != null)
+                        {
+                            <div class="alert alert-danger">@ViewBag.Error</div>
+                        }
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-check me-2"></i>Verify
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+} *@

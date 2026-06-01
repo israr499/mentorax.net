@@ -1,0 +1,281 @@
+﻿@using System.Text.Json
+@model List<MentoraXWebApp.Models.Booking>
+@{
+    ViewData["Title"] = "All Bookings";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">All Bookings</h1>
+        <div>
+            <a href="@Url.Action("Index")" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Booking Management</h6>
+        </div>
+        <div class="card-body">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="bookingsTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Booking ID</th>
+                                <th>Student</th>
+                                <th>Tutor</th>
+                                <th>Tutor Specialization</th>
+                                <th>Booking Date</th>
+                                <th>Duration</th>
+                                <th>Total Amount</th>
+                                <th>Status</th>
+                                <th>Topic</th>
+                                <th>Rating</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var booking in Model)
+                            {
+                                <tr>
+                                    <td>@booking.BookingID.ToString().Substring(0, Math.Min(8, booking.BookingID.Length))...</td>
+                                    <td>@booking.StudentName</td>
+                                    <td>@booking.TutorName</td>
+                                    <td>@booking.TutorSpecialization</td>
+                                    <td>@booking.BookingDate.ToString("MMM dd, yyyy hh:mm tt")</td>
+                                    <td>@booking.DurationHours hrs</td>
+                                    <td>$@booking.TotalAmount.ToString("N2")</td>
+                                    <td>
+                                        <span class="badge bg-@(booking.Status == "Confirmed" ? "success" :
+                                                                                                      booking.Status == "Pending" ? "warning" :
+                                                                                                      booking.Status == "Completed" ? "info" : "danger")">
+                                    @booking.Status
+                                </span>
+                            </td>
+                            <td>@booking.Topic</td>
+                            <td>
+                                @if (booking.Rating.HasValue)
+                                        {
+                                            <div class="text-nowrap">
+                                                @for (int i = 1; i <= 5; i++)
+                                                {
+                                                    if (i <= booking.Rating.Value)
+                                                    {
+                                                        <i class="fas fa-star text-warning"></i>
+                                                    }
+                                                    else
+                                                    {
+                                                        <i class="far fa-star text-warning"></i>
+                                                    }
+                                                }
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Not rated</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-info view-booking"
+                                                data-bookingid="@booking.BookingID"
+                                                data-studentname="@booking.StudentName"
+                                                data-tutorname="@booking.TutorName"
+                                                data-tutorspecialization="@booking.TutorSpecialization"
+                                                data-bookingdate="@booking.BookingDate.ToString("yyyy-MM-dd HH:mm")"
+                                                data-duration="@booking.DurationHours"
+                                                data-totalamount="@booking.TotalAmount"
+                                                data-status="@booking.Status"
+                                                data-topic="@booking.Topic"
+                                                data-rating="@booking.Rating"
+                                                data-reviewcomment="@booking.ReviewComment">
+                                            <i class="fas fa-eye"></i> View
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> No bookings found.
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Booking Details Modal -->
+<div class="modal fade" id="bookingModal" tabindex="-1" aria-labelledby="bookingModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="bookingModalLabel">
+                    <i class="fas fa-calendar-check"></i> Booking Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="bookingDetails">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Loading booking details...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" />
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Initialize DataTable
+            $('#bookingsTable').DataTable({
+                pageLength: 25,
+                order: [[4, 'desc']],
+                language: {
+                    search: "Search:",
+                    lengthMenu: "Show _MENU_ entries",
+                    info: "Showing _START_ to _END_ of _TOTAL_ bookings",
+                    infoEmpty: "No bookings found",
+                    zeroRecords: "No matching bookings found"
+                }
+            });
+
+            // View booking details
+            $('.view-booking').click(function() {
+                var button = $(this);
+
+                // Get data from data attributes
+                var bookingId = button.data('bookingid');
+                var studentName = button.data('studentname');
+                var tutorName = button.data('tutorname');
+                var tutorSpecialization = button.data('tutorspecialization') || 'N/A';
+                var bookingDate = button.data('bookingdate');
+                var duration = button.data('duration');
+                var totalAmount = button.data('totalamount');
+                var status = button.data('status');
+                var topic = button.data('topic') || 'N/A';
+                var rating = button.data('rating');
+                var reviewComment = button.data('reviewcomment');
+
+                // Generate rating stars HTML
+                var ratingHtml = '';
+                if (rating && rating > 0) {
+                    ratingHtml = '<div class="mb-2">';
+                    for (let i = 1; i <= 5; i++) {
+                        if (i <= rating) {
+                            ratingHtml += '<i class="fas fa-star text-warning fa-lg"></i> ';
+                        } else {
+                            ratingHtml += '<i class="far fa-star text-warning fa-lg"></i> ';
+                        }
+                    }
+                    ratingHtml += '</div>';
+                    if (reviewComment) {
+                        ratingHtml += `<p><strong>Review Comment:</strong><br/>"${reviewComment}"</p>`;
+                    }
+                } else {
+                    ratingHtml = '<p class="text-muted"><i class="far fa-star"></i> Not rated yet</p>';
+                }
+
+                // Get status badge class
+                var statusClass = '';
+                if (status === 'Confirmed') statusClass = 'success';
+                else if (status === 'Pending') statusClass = 'warning';
+                else if (status === 'Completed') statusClass = 'info';
+                else if (status === 'Cancelled') statusClass = 'danger';
+                else statusClass = 'secondary';
+
+                // Build modal content
+                var html = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header bg-light">
+                                    <strong><i class="fas fa-info-circle"></i> Booking Information</strong>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-sm table-borderless">
+                                        <tr>
+                                            <th style="width: 40%">Booking ID:</th>
+                                            <td><code>${bookingId}</code></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Status:</th>
+                                            <td><span class="badge bg-${statusClass}">${status}</span></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Booking Date:</th>
+                                            <td>${new Date(bookingDate).toLocaleString()}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Duration:</th>
+                                            <td>${duration} hour(s)</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Total Amount:</th>
+                                            <td><strong>$${parseFloat(totalAmount).toFixed(2)}</strong></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Topic:</th>
+                                            <td>${topic}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header bg-light">
+                                    <strong><i class="fas fa-users"></i> People Information</strong>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-sm table-borderless">
+                                        <tr>
+                                            <th style="width: 40%">Student:</th>
+                                            <td><i class="fas fa-user-graduate"></i> ${studentName}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Tutor:</th>
+                                            <td><i class="fas fa-chalkboard-user"></i> ${tutorName}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Specialization:</th>
+                                            <td>${tutorSpecialization}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <strong><i class="fas fa-star"></i> Rating & Review</strong>
+                                </div>
+                                <div class="card-body">
+                                    ${ratingHtml}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                $('#bookingDetails').html(html);
+                $('#bookingModal').modal('show');
+            });
+        });
+    </script>
+}

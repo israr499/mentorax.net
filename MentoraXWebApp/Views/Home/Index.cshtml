@@ -1,0 +1,145 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+    var userRole = Context.Session.GetString("UserRole");
+    var isLoggedIn = !string.IsNullOrEmpty(Context.Session.GetString("UserId"));
+}
+
+@if (isLoggedIn)
+{
+    <div class="mb-4">
+        <div class="alert alert-info d-flex align-items-center gap-3 animate-fade-up" style="border-left:4px solid var(--primary);">
+            <i class="fas fa-shield-alt" style="color:var(--primary);font-size:1.2rem"></i>
+            <div>
+                <strong>Secure your account</strong> — Set up Two-Factor Authentication for extra protection.
+                <a asp-action="EnableTwoFactor" asp-controller="Account" class="ms-2 fw-bold" style="color:var(--primary)">Enable 2FA →</a>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Hero -->
+<div class="hero-band animate-fade-up" style="margin-bottom:2.5rem">
+    <div style="position:relative;z-index:1">
+        <div class="mb-3">
+            <span class="badge" style="background:rgba(255,255,255,.2);color:white;font-size:.8rem;padding:.4em 1em;border-radius:99px">
+                <i class="fas fa-star me-1" style="color:#FCD34D"></i> Trusted by 10,000+ students
+            </span>
+        </div>
+        <h1 style="font-size:2.5rem;font-weight:800;color:white;line-height:1.15;margin-bottom:.75rem">
+            Learn Anything,<br>From the Best.
+        </h1>
+        <p style="color:rgba(255,255,255,.82);font-size:1.05rem;max-width:520px;margin-bottom:2rem">
+            MentoraX connects students with expert, verified tutors for one-on-one sessions — at your pace, on your schedule.
+        </p>
+
+        @if (string.IsNullOrEmpty(userRole))
+        {
+            <div class="d-flex flex-wrap gap-3">
+                <a href="/Account/RegisterStudent" class="btn btn-lg" style="background:white;color:var(--primary-dark);font-weight:700;box-shadow:0 4px 20px rgba(0,0,0,.15)">
+                    <i class="fas fa-user-graduate me-2"></i>Get Started Free
+                </a>
+                <a href="/Account/RegisterTutor" class="btn btn-lg" style="background:rgba(255,255,255,.15);color:white;border:1.5px solid rgba(255,255,255,.4);font-weight:600;backdrop-filter:blur(8px)">
+                    <i class="fas fa-chalkboard-user me-2"></i>Become a Tutor
+                </a>
+            </div>
+        }
+        else if (userRole == "Student")
+        {
+            <div class="d-flex flex-wrap gap-3">
+                <a href="/Student/Index" class="btn btn-lg" style="background:white;color:var(--primary-dark);font-weight:700;">
+                    <i class="fas fa-search me-2"></i>Find Tutors
+                </a>
+                <a href="/Student/MyBookings" class="btn btn-lg" style="background:rgba(255,255,255,.15);color:white;border:1.5px solid rgba(255,255,255,.4);font-weight:600;">
+                    <i class="fas fa-calendar me-2"></i>My Bookings
+                </a>
+            </div>
+        }
+        else if (userRole == "Tutor")
+        {
+            <div class="d-flex flex-wrap gap-3">
+                <a href="/Tutor/Dashboard" class="btn btn-lg" style="background:white;color:var(--primary-dark);font-weight:700;">
+                    <i class="fas fa-chart-bar me-2"></i>My Dashboard
+                </a>
+                <a href="/Tutor/CompleteProfile" class="btn btn-lg" style="background:rgba(255,255,255,.15);color:white;border:1.5px solid rgba(255,255,255,.4);font-weight:600;">
+                    <i class="fas fa-edit me-2"></i>Complete Profile
+                </a>
+            </div>
+        }
+        else if (userRole == "Admin")
+        {
+            <a href="/Admin/Index" class="btn btn-lg" style="background:white;color:var(--primary-dark);font-weight:700;">
+                <i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard
+            </a>
+        }
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="row g-3 mb-5 animate-fade-up-1">
+    @foreach (var stat in new[] {
+        new { num="10K+", lbl="Happy Students",     icon="fas fa-user-graduate", c="indigo" },
+        new { num="500+", lbl="Expert Tutors",      icon="fas fa-chalkboard-user", c="success" },
+        new { num="50K+", lbl="Sessions Completed", icon="fas fa-calendar-check",  c="pink" },
+        new { num="4.9★", lbl="Average Rating",     icon="fas fa-star",            c="warning" }
+        })
+    {
+        <div class="col-6 col-md-3">
+            <div class="stat-card @stat.c text-center">
+                <i class="@stat.icon stat-icon"></i>
+                <div class="stat-number">@stat.num</div>
+                <div class="stat-label">@stat.lbl</div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Features -->
+<h2 class="fw-800 text-center mb-1 animate-fade-up-2" style="font-size:1.75rem">Why Choose MentoraX?</h2>
+<p class="text-center mb-4" style="color:var(--gray-400)" class="animate-fade-up-2">Everything you need to learn or teach, in one place.</p>
+
+<div class="row g-4 mb-5 animate-fade-up-3">
+    @foreach (var f in new[] {
+        new { icon="fas fa-shield-check", title="Verified Tutors",      desc="Every tutor goes through a rigorous approval process by our admin team.", color="var(--primary)" },
+        new { icon="fas fa-calendar-alt", title="Flexible Scheduling",  desc="Book sessions that fit your timetable — mornings, evenings, weekends.", color="var(--success)" },
+        new { icon="fas fa-comments",     title="Built-in Chat",        desc="Message your tutor directly, anytime, through our integrated chat system.", color="var(--secondary)" },
+        new { icon="fas fa-graduation-cap", title="Any Subject",        desc="From Maths and Sciences to Languages and Arts — we have a tutor for you.", color="var(--warning)" }
+        })
+    {
+        <div class="col-sm-6 col-lg-3">
+            <div class="card card-hover h-100 text-center" style="padding:0.5rem 0">
+                <div class="card-body">
+                    <div class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle"
+                         style="width:60px;height:60px;background:@(f.color)1A;font-size:1.5rem;color:@f.color">
+                        <i class="@f.icon"></i>
+                    </div>
+                    <h5 class="fw-700 mb-2">@f.title</h5>
+                    <p class="text-muted small mb-0">@f.desc</p>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- How It Works -->
+<div class="card animate-fade-up-4 mb-5" style="background:var(--primary-xlight);border:none !important;box-shadow:none !important">
+    <div class="card-body py-5">
+        <h2 class="fw-800 text-center mb-4" style="font-size:1.6rem">How It Works</h2>
+        <div class="row g-4 justify-content-center">
+            @foreach (var step in new[] {
+                        new { n="1", title="Sign Up",         desc="Create a free account as a student or join as a tutor.",    icon="fas fa-user-plus" },
+                        new { n="2", title="Find Your Tutor", desc="Browse verified tutors, filter by subject, price, rating.", icon="fas fa-search" },
+                        new { n="3", title="Book & Learn",    desc="Book a session, chat with your tutor, and start learning.", icon="fas fa-rocket" }
+                        })
+            {
+                <div class="col-md-4 text-center">
+                    <div class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle"
+                         style="width:64px;height:64px;background:var(--grad-brand);color:white;font-size:1.6rem;font-weight:800;box-shadow:0 8px 24px rgba(99,102,241,.35)">
+                        @step.n
+                    </div>
+                    <h5 class="fw-700 mb-1">@step.title</h5>
+                    <p class="text-muted small">@step.desc</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
