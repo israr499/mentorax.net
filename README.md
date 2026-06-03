@@ -215,17 +215,6 @@ Advanced features such as payment processing, blockchain integration, and mobile
 
 ---
 
-## 👥 Team Members
-
-| Name | Responsibility |
-|--------|--------------|
-| Usama Bin Tariq | User & Tutor Module |
-| Israr Ayub Bajwa | API Gateway, DevOps |
-| M Omair | Booking & Database Module |
-| Owais Khalique | Documentation & UI Support |
-
----
-
 ## 🧪 Testing
 
 The platform will undergo:
