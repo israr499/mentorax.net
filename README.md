@@ -7,7 +7,8 @@ MentoraX is a cloud-based tutoring platform designed to connect students with ve
 Built using a microservices architecture and deployed on Microsoft Azure, MentoraX provides a modern solution for online education with cloud-native technologies.
 
 ---
-
+Live Demo
+https://mentorax-webapp-e5g6aectascma9hj.southeastasia-01.azurewebsites.net/
 ## 🎯 Problem Statement
 
 Many existing tutoring platforms face several issues:
