@@ -233,10 +233,4 @@ This project is developed as part of the Cloud Computing course at Bahria Univer
 
 ---
 
-## 📞 Contact
-
-For project-related queries, please contact the development team through GitHub Issues.
-
----
-
 ### ⭐ If you find this project useful, don't forget to star the repository!
